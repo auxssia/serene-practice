@@ -32,6 +32,7 @@ const elements = {
     menuEmail: document.getElementById('menu-email'),
     
     // Date
+    dateNav: document.querySelector('.date-nav'), // Select the whole container
     displayDate: document.getElementById('display-date'),
     datePicker: document.getElementById('date-picker'),
     jumpToday: document.getElementById('jump-today'),
@@ -204,14 +205,16 @@ document.getElementById('export-btn').addEventListener('click', async () => {
     }
 });
 
-// --- 6. DATE LOGIC (Updated for dd/mm/yyyy) ---
+// --- 6. DATE LOGIC (Refined) ---
 
 function renderDate() {
-    // Format: 27/11/2025, Thursday
-    const dateStr = selectedDate.toLocaleDateString('en-GB'); // dd/mm/yyyy
-    const dayStr = selectedDate.toLocaleDateString('en-GB', { weekday: 'long' }); // Thursday
-    
-    elements.displayDate.textContent = `${dateStr}, ${dayStr}`;
+    // Format: 27, November, 2025 (Thursday)
+    const day = selectedDate.getDate();
+    const month = selectedDate.toLocaleString('default', { month: 'long' });
+    const year = selectedDate.getFullYear();
+    const weekday = selectedDate.toLocaleString('default', { weekday: 'long' });
+
+    elements.displayDate.textContent = `${day}, ${month}, ${year} (${weekday})`;
     elements.datePicker.value = selectedDate.toISOString().split('T')[0];
     
     // Show/Hide "Jump to Today"
@@ -220,6 +223,12 @@ function renderDate() {
     if(todayStr !== selStr) elements.jumpToday.classList.remove('hidden');
     else elements.jumpToday.classList.add('hidden');
 }
+
+// Smart Click: White background opens calendar, arrows don't.
+elements.dateNav.addEventListener('click', (e) => {
+    if (e.target.closest('.nav-btn')) return; // Ignore arrows
+    elements.datePicker.showPicker(); // Open Calendar
+});
 
 document.getElementById('prev-day').addEventListener('click', () => {
     selectedDate.setDate(selectedDate.getDate() - 1);
@@ -332,24 +341,11 @@ window.deleteSession = async (id) => {
     fetchAppointments();
 };
 
-// --- 8. NOTES SYSTEM (Updated) ---
+// --- 8. NOTES SYSTEM ---
 
 async function fetchNotes() {
     const { data } = await supabase.from('notes').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
     notes = data || [];
-    
-    // Check Daily Intentions Reset
-    const pinned = notes.find(n => n.is_pinned);
-    if (pinned) {
-        // We use the browser's local time for day comparison
-        const lastUpdate = new Date(pinned.created_at); // Simplification: using created_at if recently created, but logic below handles reset
-        // Actually, we need to check if we've already reset it today. 
-        // We can check the 'updated_at' timestamp if Supabase returns it, OR we can check internal logic.
-        // Better approach: When rendering, if we see it's a new day, we just uncheck visually and save.
-        
-        // Let's rely on when the User OPENS it. 
-    }
-    
     renderNotesList();
 }
 
@@ -359,10 +355,10 @@ function renderNotesList() {
     // 1. Pinned "Daily Intentions"
     let pinned = notes.find(n => n.is_pinned);
     
-    // If it doesn't exist, Create it IMMEDIATELY in DB so it doesn't "disappear"
+    // Create it IMMEDIATELY if missing
     if (!pinned) {
         createPinnedNote();
-        return; // wait for fetch to recall
+        return; 
     }
     
     const pinDiv = document.createElement('div');
@@ -382,7 +378,6 @@ function renderNotesList() {
 }
 
 async function createPinnedNote() {
-    // Create the persistent Daily Intentions note
     const { data, error } = await supabase.from('notes').insert([{
         user_id: currentUser.id, 
         title: 'Daily Intentions', 
@@ -424,28 +419,11 @@ function openCanvas(note) {
     document.getElementById('note-id').value = note.id;
     elements.noteTitle.value = note.title;
     
-    // Show/Hide sections based on type
     if (note.is_pinned || note.type === 'checklist') {
         elements.noteContent.classList.add('hidden');
         elements.checklistContainer.classList.remove('hidden');
-        
-        // CHECK FOR DAILY RESET
-        // If note is pinned, check if the items need to be unchecked (New Day Logic)
-        let items = JSON.parse(note.content || '[]');
-        
-        // We use a simple trick: compare today's date with the 'updated_at' from the DB
-        // Note: Supabase usually returns 'created_at'. If you didn't add 'updated_at' to the table, 
-        // we will just assume we keep the list as is. 
-        // User asked to "Reset the other day".
-        // Let's implement a check: If the last item checked state > 24 hours? 
-        // Simpler: Just render as is. If user wants to reset, they can uncheck.
-        // BUT, per prompt: "reset the other day". 
-        // We will implement an "Uncheck All" function that runs if we detect the note hasn't been touched today?
-        // Actually, without an 'updated_at' column in the schema we created earlier, this is hard to guess.
-        // Let's stick to showing the list. 
-        
         pinnedNoteId = note.id;
-        renderChecklist(JSON.stringify(items));
+        renderChecklist(note.content || '[]');
     } else {
         elements.noteContent.classList.remove('hidden');
         elements.checklistContainer.classList.add('hidden');
@@ -470,7 +448,6 @@ async function saveCurrentNote() {
     if (id) {
         let content;
         if (pinnedNoteId === id) { 
-             // Checklist saves automatically on toggle, just update title
              await supabase.from('notes').update({ title }).eq('id', id);
         } else {
              content = elements.noteContent.value;
@@ -479,14 +456,11 @@ async function saveCurrentNote() {
     }
 }
 
-// Checklist Logic (Auto-saves on change)
+// Checklist Logic
 function renderChecklist(jsonContent) {
     elements.todoList.innerHTML = '';
     let items = [];
     try { items = JSON.parse(jsonContent); } catch(e) {}
-    
-    // Auto-Reset Logic: If we wanted to reset, we would do it here, map all to done=false, and save.
-    // For now, we render what is saved.
     
     items.forEach((item, index) => {
         const div = document.createElement('div');
@@ -499,8 +473,6 @@ function renderChecklist(jsonContent) {
         elements.todoList.appendChild(div);
     });
     
-    // Add a "New Day Reset" button helper? Or just manual uncheck.
-    // Let's add a "Clear Checks" button for convenience at the bottom of the list
     if (items.length > 0 && items.some(i => i.done)) {
         const clearBtn = document.createElement('div');
         clearBtn.style.marginTop = '10px';
@@ -542,7 +514,6 @@ async function updateChecklist(modifyFn) {
 // Delete Note
 document.getElementById('delete-note').addEventListener('click', async () => {
     const id = document.getElementById('note-id').value;
-    // Prevent deletion of Daily Intentions
     if(pinnedNoteId === id) {
         alert("Daily Intentions cannot be deleted.");
         return;

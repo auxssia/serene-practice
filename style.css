@@ -52,7 +52,7 @@ body {
     border-radius: 50px; cursor: pointer; transition: transform 0.1s; font-size: 0.95rem;
     width: 100%; /* Default for auth */
 }
-.modal-actions .btn-primary { width: auto; } /* Auto width for modals */
+.modal-actions .btn-primary { width: auto; }
 .btn-primary:active { transform: scale(0.98); }
 .btn-text { background: none; border: none; color: var(--text-light); cursor: pointer; padding: 10px 20px; font-size: 0.95rem; }
 .btn-text:hover { color: var(--text-charcoal); }
@@ -101,20 +101,28 @@ body {
 /* Date Navigation */
 .date-container { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
 .date-nav {
-    display: flex; align-items: center; background: white; padding: 0.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    background: white; padding: 0.5rem; width: 100%;
     border-radius: 50px; box-shadow: var(--shadow-soft);
+    cursor: pointer; /* Makes the white space clickable */
 }
-.nav-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; padding: 0 10px; color: var(--text-charcoal); opacity: 0.6; }
+.nav-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.2rem; padding: 0 15px; color: var(--text-charcoal);
+    opacity: 0.6; z-index: 10; /* Ensure arrows sit above the background click */
+}
 .nav-btn:hover { opacity: 1; }
-.date-wrapper { position: relative; }
+.date-wrapper { flex-grow: 1; text-align: center; }
 .current-date { 
     font-family: var(--font-heading); font-size: 1.1rem; font-weight: 600; 
-    margin: 0 10px; cursor: pointer; 
+    cursor: pointer; white-space: nowrap; user-select: none;
 }
+
+/* Hide the input but keep it accessible for JS */
 #date-picker {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    opacity: 0; cursor: pointer;
+    position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none; border: none;
 }
+
 .today-icon-btn {
     background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--accent-sage);
     transition: transform 0.2s;
