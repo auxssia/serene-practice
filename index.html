@@ -3,894 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Serene Practice | Hope Psychotherapy</title>
+    <title>Serene Practice | Dr. Pallavi</title>
+    
+    <!-- Fonts: Inter for UI, Playfair Display for Headings (Homely Feel) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        /* --- Japanese Floral Inspired Design --- */
-        :root {
-            --bg-color: #FDFBF5; /* A warm, creamy off-white, like handmade paper */
-            --text-color: #4A4A4A; /* A soft, dark gray instead of harsh black */
-            --primary-accent: #C3B1E1; /* A gentle, dusty lavender */
-            --primary-accent-hover: #B19CD9;
-            --secondary-accent: #B2D8B2; /* A calming, soft sage green */
-            --border-color: #EAEAEA;
-            --shadow-color: rgba(0, 0, 0, 0.05);
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            --new-client-color: #AEC6CF; /* Soft pastel blue */
-            --follow-up-color: #C1E1C1; /* Soft pastel green */
-        }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+    
+    <!-- Link to your new CSS file -->
+    <link rel="stylesheet" href="style.css">
 
-        /* Basic Reset & Body Styling */
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            background-image: url('https://www.transparenttextures.com/patterns/washi.png'); /* Subtle washi paper texture */
-            display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
-            transition: background-color 0.3s ease;
-        }
-        
-        /* --- Login Screen --- */
-        #login-view {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .login-box {
-            background-color: white;
-            padding: 3rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px var(--shadow-color);
-            max-width: 400px;
-        }
-
-        .login-box h1 {
-            font-weight: 500;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .login-box p {
-            margin-bottom: 2rem;
-            color: #777;
-        }
-
-        .login-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 24px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            background-color: #fff;
-            transition: all 0.2s ease;
-        }
-        
-        .login-button:hover {
-            border-color: #ccc;
-            box-shadow: 0 2px 10px var(--shadow-color);
-        }
-
-        /* --- Main App Container --- */
-        #app-container {
-            display: none; /* Hidden by default */
-            flex-grow: 1;
-            width: 100%;
-        }
-
-        .main-layout {
-            display: flex;
-            width: 100%;
-        }
-
-        /* --- Sidebar Navigation --- */
-        .sidebar {
-            width: 240px;
-            background-color: #fff;
-            border-right: 1px solid var(--border-color);
-            padding: 2rem 1rem;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar-header {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            padding: 0 1rem;
-        }
-        
-        .sidebar-header span {
-            color: var(--primary-accent);
-        }
-
-        .nav-menu {
-            list-style: none;
-            flex-grow: 1;
-        }
-
-        .nav-item a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 1rem;
-            border-radius: 8px;
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            transition: all 0.2s ease;
-        }
-
-        .nav-item a:hover {
-            background-color: #f7f7f7;
-        }
-
-        .nav-item a.active {
-            background-color: var(--primary-accent);
-            color: white;
-            box-shadow: 0 4px 15px rgba(195, 177, 225, 0.4);
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 1rem;
-            border-top: 1px solid var(--border-color);
-            margin-top: 1rem;
-        }
-
-        .user-profile img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-        }
-        
-        .user-info span {
-            display: block;
-        }
-
-        .user-name {
-            font-weight: 600;
-        }
-
-        #logout-button {
-            font-size: 0.8rem;
-            color: #999;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            text-align: left;
-        }
-        
-        #logout-button:hover {
-            color: var(--primary-accent);
-        }
-
-        /* --- Main Content --- */
-        .main-content {
-            flex-grow: 1;
-            padding: 2rem 3rem;
-            overflow-y: auto;
-            max-height: 100vh;
-        }
-
-        .view {
-            display: none;
-        }
-
-        .view.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .page-header {
-            margin-bottom: 2rem;
-        }
-
-        .page-header h1 {
-            font-size: 2.25rem;
-            font-weight: 600;
-        }
-
-        .page-header p {
-            color: #777;
-            font-size: 1.1rem;
-        }
-        
-        .page-header .date-display {
-            font-weight: 500;
-            color: var(--secondary-accent);
-        }
-
-        /* Dashboard specific */
-        .dashboard-grid {
-            display: grid;
-            gap: 2rem;
-        }
-
-        /* --- Cards and Lists --- */
-        .card {
-            background-color: #fff;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px var(--shadow-color);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        .card-header h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-accent);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary-accent-hover);
-            box-shadow: 0 4px 15px rgba(195, 177, 225, 0.4);
-        }
-
-        #appointment-list {
-            list-style: none;
-        }
-
-        .appointment-item {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.2s ease;
-        }
-        
-        .appointment-item:last-child {
-            border-bottom: none;
-        }
-        
-        .appointment-item:hover {
-            background-color: #fafafa;
-        }
-
-        .appointment-time {
-            font-weight: 600;
-            width: 100px;
-        }
-        
-        .appointment-divider {
-            width: 4px;
-            height: 40px;
-            border-radius: 4px;
-            margin: 0 1rem;
-        }
-        
-        .appointment-divider.new { background-color: var(--new-client-color); }
-        .appointment-divider.follow-up { background-color: var(--follow-up-color); }
-
-        .appointment-details {
-            flex-grow: 1;
-        }
-        
-        .appointment-details strong {
-            display: block;
-            font-weight: 500;
-        }
-        
-        .appointment-details span {
-            font-size: 0.9rem;
-            color: #888;
-        }
-
-        .appointment-actions button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            margin-left: 10px;
-            opacity: 0.6;
-        }
-        .appointment-actions button:hover { opacity: 1; }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #999;
-        }
-        .empty-state p { font-size: 1.1rem; }
-
-        /* --- Modal --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            transform: scale(0.9);
-            transition: all 0.3s ease;
-        }
-        
-        .modal-overlay.visible .modal-content {
-            transform: scale(1);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-header h2 {
-            font-weight: 600;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-group label {
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-group input, .form-group select, .form-group textarea {
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-family: var(--font-family);
-            font-size: 1rem;
-        }
-        
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            border-top: 1px solid var(--border-color);
-            padding-top: 1.5rem;
-        }
-        
-        .btn-secondary {
-            background-color: #f0f0f0;
-            color: var(--text-color);
-        }
-        
-        .btn-secondary:hover {
-            background-color: #e0e0e0;
-        }
-        
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-            .main-layout {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-                height: auto;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                flex-direction: row;
-                justify-content: space-around;
-                align-items: center;
-                padding: 0.5rem;
-            }
-            .sidebar-header, .user-profile {
-                display: none;
-            }
-            .nav-menu {
-                display: flex;
-                width: 100%;
-                justify-content: space-around;
-            }
-            .nav-item a {
-                flex-direction: column;
-                gap: 4px;
-                font-size: 0.7rem;
-                padding: 8px;
-            }
-            .main-content {
-                padding: 1.5rem 1rem;
-                max-height: none;
-            }
-            .page-header h1 {
-                font-size: 1.8rem;
-            }
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <!-- Login View -->
-    <div id="login-view">
-        <div class="login-box">
-            <h1>Serene Practice 🌿</h1>
-            <p>A calm, focused space for your practice.</p>
-            <button id="login-button" class="login-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.2v2.8h5.26c-.23 1.25-.9 2.5-2.19 3.29v2.05h2.64c1.55-1.43 2.44-3.61 2.44-5.84c0-.79-.07-1.54-.19-2.3z"/><path fill="currentColor" d="M12.15 21c2.49 0 4.58-1.04 6.1-2.82l-2.64-2.05c-.83.56-1.89.88-3.46.88c-2.63 0-4.87-1.78-5.67-4.15H3.81v2.12C5.35 18.61 8.51 21 12.15 21z"/><path fill="currentColor" d="M6.48 12.91c-.19-.56-.31-1.17-.31-1.8s.12-1.24.31-1.8V7.19H3.81C3.25 8.43 2.95 9.83 2.95 11.11s.3 2.68.86 3.92z"/><path fill="currentColor" d="M12.15 5.2c1.35 0 2.58.46 3.53 1.39l2.25-2.25C16.73 2.09 14.64 1 12.15 1C8.51 1 5.35 3.39 3.81 6.28l2.67 2.12C7.28 6.98 9.52 5.2 12.15 5.2z"/></svg>
-                Sign in with Google
-            </button>
-        </div>
-    </div>
-    
-    <!-- Main Application View -->
-    <div id="app-container">
-        <div class="main-layout">
-            <!-- Sidebar Navigation -->
-            <nav class="sidebar">
-                <div class="sidebar-header">Serene<span>.</span></div>
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link active" data-view="dashboard-view">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z"/></svg>
-                            <span>Home</span>
-                        </a>
-                    </li>
-                </ul>
-                <div class="user-profile">
-                    <img id="user-photo" src="https://placehold.co/40x40" alt="User Photo">
-                    <div class="user-info">
-                        <span id="user-name" class="user-name">Loading...</span>
-                        <button id="logout-button">Sign Out</button>
-                    </div>
+    <!-- 1. AUTH SCREEN -->
+    <div id="auth-view">
+        <div class="auth-card">
+            <h1 class="logo">Serene<span>.</span></h1>
+            <p class="auth-subtitle">A calm space for your practice.</p>
+            
+            <form id="auth-form">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" class="input-field" placeholder="doctor@example.com" required>
                 </div>
-            </nav>
-
-            <!-- Main Content Area -->
-            <main class="main-content">
-                <!-- Dashboard View -->
-                <div id="dashboard-view" class="view active">
-                    <header class="page-header">
-                        <h1 id="greeting">Hello, Dr. Pallavi 🌼</h1>
-                        <p>Here is your schedule for today, <span class="date-display" id="today-date"></span>.</p>
-                    </header>
-                    <div class="dashboard-grid">
-                        <div class="card">
-                            <div class="card-header">
-                                <h2>Today's Sessions</h2>
-                                <button class="btn btn-primary" id="add-appointment-btn">+ Add Session</button>
-                            </div>
-                            <ul id="appointment-list">
-                                <div class="empty-state">
-                                    <p>No sessions scheduled for today. Time for a cup of tea?</p>
-                                </div>
-                            </ul>
-                        </div>
-                    </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" class="input-field" placeholder="••••••••" required>
                 </div>
-            </main>
-        </div>
-    </div>
+                <button type="submit" class="btn-primary" id="auth-btn">Sign In</button>
+            </form>
 
-    <!-- Add/Edit Appointment Modal -->
-    <div class="modal-overlay" id="appointment-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-title">Add New Session</h2>
-                <button class="close-modal" id="close-modal-btn">&times;</button>
+            <div class="auth-toggle">
+                <span id="toggle-text">New here? </span>
+                <a id="toggle-auth">Create an account</a>
             </div>
-            <form id="appointment-form">
-                <input type="hidden" id="appointment-id">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="client-name">Client Name</label>
-                        <input type="text" id="client-name" required>
+            <p id="auth-error"></p>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APP SCREEN -->
+    <div id="app-view">
+        <header class="header">
+            <div class="greeting">
+                <h1 id="greeting-text">Good Morning</h1>
+                <p>Let's focus on today.</p>
+            </div>
+            <button class="logout-btn" id="logout-btn">Sign Out</button>
+        </header>
+
+        <!-- Date Navigator -->
+        <div class="date-nav">
+            <button class="nav-btn" id="prev-day">←</button>
+            <span class="current-date" id="display-date">Today</span>
+            <button class="nav-btn" id="next-day">→</button>
+        </div>
+
+        <!-- Appointment List -->
+        <div class="appointment-card">
+            <div id="appointment-list">
+                <!-- Items injected by app.js -->
+            </div>
+        </div>
+
+        <!-- Floating Add Button -->
+        <button class="fab" id="fab-add">+</button>
+    </div>
+
+    <!-- 3. ADD/EDIT MODAL -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-card">
+            <h2 class="modal-title" id="modal-title">New Session</h2>
+            <form id="session-form">
+                <input type="hidden" id="edit-id"> <!-- Hidden ID for editing -->
+                
+                <div class="input-group">
+                    <label>Client Name</label>
+                    <input type="text" id="client-name" class="input-field" required>
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Date</label>
+                        <input type="date" id="session-date" class="input-field" required>
                     </div>
-                    <div class="form-group">
-                        <label for="session-type">Session Type</label>
-                        <select id="session-type" required>
-                            <option value="Follow-up">Follow-up</option>
+                    <div class="input-group">
+                        <label>Time</label>
+                        <input type="time" id="session-time" class="input-field" required>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Type</label>
+                        <select id="session-type" class="input-field">
                             <option value="New">New Client</option>
+                            <option value="Follow">Follow-up</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="session-date">Date</label>
-                        <input type="date" id="session-date" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="session-time">Time</label>
-                        <input type="time" id="session-time" required>
-                    </div>
-                    <div class="form-group full-width">
-                        <label for="session-mode">Mode</label>
-                        <select id="session-mode" required>
+                    <div class="input-group">
+                        <label>Mode</label>
+                        <select id="session-mode" class="input-field">
                             <option value="Online">Online</option>
                             <option value="Offline">In-Person</option>
                         </select>
                     </div>
-                    <div class="form-group full-width">
-                        <label for="session-notes">Session Notes</label>
-                        <textarea id="session-notes"></textarea>
-                    </div>
                 </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="cancel-modal-btn">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Session</button>
+
+                <div class="input-group">
+                    <label>Notes</label>
+                    <textarea id="session-notes" class="input-field" rows="3"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-primary" id="save-btn">Save Session</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        // Import Firebase modules from the version you specified
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-
-        // --- Your NEW Firebase Configuration ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyB7W-Feh8gTQmA7glEljJuwa210u2ynjjo",
-            authDomain: "hope-3ee83.firebaseapp.com",
-            projectId: "hope-3ee83",
-            storageBucket: "hope-3ee83.appspot.com",
-            messagingSenderId: "946863970543",
-            appId: "1:946863970543:web:9bab818cb6e8a7318a631a"
-        };
-        
-        // --- Initialize Firebase ---
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // --- Global State ---
-        let currentUserId = null;
-        let unsubscribeAppointments = null;
-
-        // --- DOM Elements ---
-        const loginView = document.getElementById('login-view');
-        const appContainer = document.getElementById('app-container');
-        const loginButton = document.getElementById('login-button');
-        const logoutButton = document.getElementById('logout-button');
-        const greetingEl = document.getElementById('greeting');
-        const userNameEl = document.getElementById('user-name');
-        const userPhotoEl = document.getElementById('user-photo');
-        const todayDateEl = document.getElementById('today-date');
-        const appointmentListEl = document.getElementById('appointment-list');
-        
-        // Modal elements
-        const modal = document.getElementById('appointment-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const appointmentForm = document.getElementById('appointment-form');
-        const addAppointmentBtn = document.getElementById('add-appointment-btn');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const cancelModalBtn = document.getElementById('cancel-modal-btn');
-
-        // --- Authentication ---
-        const provider = new GoogleAuthProvider();
-
-        loginButton.addEventListener('click', async () => {
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Error signing in with Google:", error);
-            }
-        });
-
-        logoutButton.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error("Error signing out:", error);
-            }
-        });
-
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                // User is signed in
-                currentUserId = user.uid;
-                loginView.style.display = 'none';
-                appContainer.style.display = 'block';
-                setupUIForUser(user);
-                fetchAppointmentsForToday();
-            } else {
-                // User is signed out
-                currentUserId = null;
-                loginView.style.display = 'flex';
-                appContainer.style.display = 'none';
-                if (unsubscribeAppointments) unsubscribeAppointments();
-            }
-        });
-
-        // --- UI Setup & Rendering ---
-        function setupUIForUser(user) {
-            const firstName = user.displayName.split(' ')[0];
-            greetingEl.textContent = `Hello, Dr. ${firstName} 🌼`;
-            userNameEl.textContent = user.displayName;
-            userPhotoEl.src = user.photoURL;
-            const today = new Date();
-            todayDateEl.textContent = today.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-        
-        function formatTime(date) {
-            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-        }
-
-        function renderAppointments(appointments) {
-            appointmentListEl.innerHTML = ''; // Clear existing list
-            
-            if (appointments.length === 0) {
-                 appointmentListEl.innerHTML = `
-                    <div class="empty-state">
-                        <p>No sessions scheduled for today. Time for a cup of tea?</p>
-                    </div>`;
-                return;
-            }
-
-            // Sort appointments by time
-            appointments.sort((a, b) => a.date.toDate() - b.date.toDate());
-
-            appointments.forEach(appt => {
-                const item = document.createElement('li');
-                item.className = 'appointment-item';
-                item.dataset.id = appt.id;
-                
-                const sessionTime = formatTime(appt.date.toDate());
-                const typeClass = appt.sessionType === 'New' ? 'new' : 'follow-up';
-
-                item.innerHTML = `
-                    <div class="appointment-time">${sessionTime}</div>
-                    <div class="appointment-divider ${typeClass}"></div>
-                    <div class="appointment-details">
-                        <strong>${appt.clientName}</strong>
-                        <span>${appt.sessionType} &middot; ${appt.mode}</span>
-                    </div>
-                    <div class="appointment-actions">
-                        <button class="edit-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83l3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"/></svg>
-                        </button>
-                        <button class="delete-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z"/></svg>
-                        </button>
-                    </div>
-                `;
-                appointmentListEl.appendChild(item);
-            });
-        }
-
-
-        // --- Firestore Operations ---
-        function fetchAppointmentsForToday() {
-            if (unsubscribeAppointments) unsubscribeAppointments();
-            if (!currentUserId) return;
-
-            const today = new Date();
-            const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-            const endOfDay = new Date(today.setHours(23, 59, 59, 999));
-
-            const q = query(
-                collection(db, "appointments"),
-                where("userId", "==", currentUserId),
-                where("date", ">=", startOfDay),
-                where("date", "<=", endOfDay)
-            );
-
-            unsubscribeAppointments = onSnapshot(q, (querySnapshot) => {
-                const appointments = [];
-                querySnapshot.forEach((doc) => {
-                    appointments.push({ id: doc.id, ...doc.data() });
-                });
-                renderAppointments(appointments);
-            }, (error) => {
-                console.error("Error fetching appointments: ", error);
-            });
-        }
-        
-        async function saveAppointment(data) {
-            if (!currentUserId) return;
-            
-            const appointmentData = {
-                clientName: data.clientName,
-                sessionType: data.sessionType,
-                mode: data.sessionMode,
-                notes: data.sessionNotes,
-                userId: currentUserId,
-                date: Timestamp.fromDate(new Date(`${data.sessionDate}T${data.sessionTime}`))
-            };
-            
-            try {
-                 if (data.id) {
-                    // Update existing appointment
-                    const docRef = doc(db, "appointments", data.id);
-                    await setDoc(docRef, appointmentData);
-                } else {
-                    // Add new appointment
-                    await addDoc(collection(db, "appointments"), appointmentData);
-                }
-            } catch(e) {
-                console.error("Error saving appointment: ", e);
-            }
-        }
-        
-        async function deleteAppointment(id) {
-            if (!currentUserId) return;
-            if (confirm('Are you sure you want to delete this session?')) {
-                try {
-                    await deleteDoc(doc(db, "appointments", id));
-                } catch (e) {
-                    console.error("Error deleting document: ", e);
-                }
-            }
-        }
-
-        // --- Modal Logic ---
-        function openModal(data = null) {
-            appointmentForm.reset();
-            if (data) {
-                modalTitle.textContent = 'Edit Session';
-                document.getElementById('appointment-id').value = data.id;
-                document.getElementById('client-name').value = data.clientName;
-                document.getElementById('session-type').value = data.sessionType;
-                const date = data.date.toDate();
-                document.getElementById('session-date').value = date.toISOString().split('T')[0];
-                document.getElementById('session-time').value = date.toTimeString().split(' ')[0].substring(0,5);
-                document.getElementById('session-mode').value = data.mode;
-                document.getElementById('session-notes').value = data.notes;
-            } else {
-                modalTitle.textContent = 'Add New Session';
-                document.getElementById('appointment-id').value = '';
-                document.getElementById('session-date').value = new Date().toISOString().split('T')[0];
-            }
-            modal.classList.add('visible');
-        }
-
-        function closeModal() {
-            modal.classList.remove('visible');
-        }
-
-        addAppointmentBtn.addEventListener('click', () => openModal());
-        closeModalBtn.addEventListener('click', closeModal);
-        cancelModalBtn.addEventListener('click', closeModal);
-        
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
-
-        appointmentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = {
-                id: document.getElementById('appointment-id').value,
-                clientName: document.getElementById('client-name').value,
-                sessionType: document.getElementById('session-type').value,
-                sessionDate: document.getElementById('session-date').value,
-                sessionTime: document.getElementById('session-time').value,
-                sessionMode: document.getElementById('session-mode').value,
-                sessionNotes: document.getElementById('session-notes').value
-            };
-            await saveAppointment(formData);
-            closeModal();
-        });
-        
-        // Event delegation for edit/delete buttons
-        appointmentListEl.addEventListener('click', (e) => {
-            const target = e.target.closest('button');
-            if (!target) return;
-
-            const parentItem = target.closest('.appointment-item');
-            const docId = parentItem.dataset.id;
-            
-            if (target.classList.contains('delete-btn')) {
-                deleteAppointment(docId);
-            } else if (target.classList.contains('edit-btn')) {
-                // This part is simplified. A full implementation would fetch the document from Firestore
-                // to ensure all data (especially notes) is present before opening the modal.
-                alert("Editing is simplified. Please re-enter date, time, and notes to ensure accuracy.");
-                
-                const clientName = parentItem.querySelector('.appointment-details strong').textContent;
-                const [sessionType, mode] = parentItem.querySelector('.appointment-details span').textContent.split(' · ');
-
-                openModal({
-                    id: docId,
-                    clientName,
-                    sessionType,
-                    mode,
-                    notes: '', // Notes are not displayed on the list
-                    date: new Date() // Placeholder; form will require user to set it
-                });
-            }
-        });
-
-    </script>
+    <!-- Link to your new JS file -->
+    <script src="app.js"></script>
 </body>
 </html>
-
