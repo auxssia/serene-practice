@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serene Practice</title>
-    <!-- Favicon (A little plant seedling) -->
+    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
     
     <!-- Fonts -->
@@ -24,7 +24,6 @@
             <p class="auth-subtitle">A calm space for your practice.</p>
             
             <form id="auth-form">
-                <!-- Name field is now required for sign up -->
                 <div class="input-group" id="name-group" style="display:none;">
                     <label>Full Name</label>
                     <input type="text" id="full-name" class="input-field" placeholder="Dr. Name">
@@ -56,11 +55,16 @@
                 <p>Let's focus on today.</p>
             </div>
             
-            <!-- Profile Dropdown -->
+            <!-- Elegant Circular Profile -->
             <div class="profile-container">
-                <button id="profile-btn" class="profile-avatar">Dr</button>
+                <div id="profile-avatar" class="avatar-circle">Dr</div>
+                
+                <!-- Dropdown Menu -->
                 <div id="profile-menu" class="profile-dropdown hidden">
-                    <div class="menu-item" id="menu-email" style="color:#888; font-size:0.8rem; cursor:default;">email@test.com</div>
+                    <div class="menu-header">
+                        <span id="menu-name">Dr. Name</span>
+                        <span id="menu-email">email@test.com</span>
+                    </div>
                     <button class="menu-item" id="edit-profile-btn">Edit Profile</button>
                     <button class="menu-item" id="export-btn">Export Data (CSV)</button>
                     <div class="menu-divider"></div>
@@ -69,47 +73,38 @@
             </div>
         </header>
 
-        <!-- Pinned Note (Daily Intentions) -->
-        <div class="pinned-section">
-            <div class="pinned-card">
-                <div class="pinned-header">
-                    <h3>Daily Intentions</h3>
-                    <span class="pin-icon">📌</span>
-                </div>
-                <div id="todo-list" class="todo-content">
-                    <!-- Checkboxes go here -->
-                </div>
-                <button class="add-todo-btn" id="add-todo">+ Add Item</button>
-            </div>
-        </div>
-
         <!-- Date Navigator -->
-        <div class="date-nav-container">
+        <div class="date-container">
             <div class="date-nav">
                 <button class="nav-btn" id="prev-day">←</button>
-                <!-- The label triggers the hidden date input -->
-                <label for="date-picker" class="current-date" id="display-date">Today</label>
-                <input type="date" id="date-picker" style="position:absolute; visibility:hidden;">
+                <div class="date-wrapper">
+                    <label for="date-picker" class="current-date" id="display-date">Today</label>
+                    <!-- Hidden input triggers standard calendar -->
+                    <input type="date" id="date-picker">
+                </div>
                 <button class="nav-btn" id="next-day">→</button>
             </div>
-            <button class="today-btn" id="jump-today">Back to Today</button>
+            <!-- Subtle "Return to Today" Icon (Hidden when on today) -->
+            <button id="jump-today" class="today-icon-btn hidden" title="Go to Today">
+                ↺
+            </button>
         </div>
 
-        <!-- Appointment List -->
-        <div class="appointment-card">
+        <!-- Appointment List Card -->
+        <div class="card-container">
             <div id="appointment-list">
-                <!-- Items injected by app.js -->
+                <!-- Items injected by JS -->
             </div>
         </div>
 
-        <!-- General Notes Section -->
-        <div class="notes-section">
-            <div class="section-header">
-                <h2>Patient Notes & History</h2>
-                <button class="btn-small" id="add-note-btn">+ New Note</button>
+        <!-- Notes Card -->
+        <div class="card-container notes-container">
+            <div class="card-header-row">
+                <h2>Notes</h2>
+                <button class="add-icon-btn" id="add-note-title-btn">+</button>
             </div>
-            <div id="notes-grid" class="notes-grid">
-                <!-- Notes injected here -->
+            <div id="notes-list" class="notes-list">
+                <!-- Pinned Note & Regular Notes injected here -->
             </div>
         </div>
 
@@ -163,24 +158,33 @@
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" id="cancel-btn">Cancel</button>
-                    <button type="submit" class="btn-primary" id="save-btn">Save Session</button>
+                    <button type="button" class="btn-text" id="cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-primary" id="save-btn">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- 4. NOTE EXPANSION MODAL -->
+    <!-- 4. NOTES CANVAS MODAL (Clean, no buttons) -->
     <div class="modal-overlay" id="note-modal">
-        <div class="modal-card">
+        <div class="modal-card canvas-card">
             <input type="hidden" id="note-id">
-            <input type="text" id="note-title" class="note-title-input" placeholder="Title (e.g., Patient History - John Doe)" required>
-            <textarea id="note-content" class="note-content-input" placeholder="Write your notes here..." rows="10"></textarea>
-            <div class="modal-actions">
-                <button type="button" class="btn-cancel" id="cancel-note">Close</button>
-                <button type="button" class="btn-primary" id="save-note">Save Note</button>
+            
+            <div class="canvas-header">
+                <input type="text" id="note-title" class="canvas-title" placeholder="Untitled Note">
+                <button class="btn-text" id="close-note">Done</button>
             </div>
-            <button class="delete-text-btn" id="delete-note">Delete Note</button>
+            
+            <!-- Standard Text Area -->
+            <textarea id="note-content" class="canvas-content" placeholder="Start writing..."></textarea>
+            
+            <!-- Checklist Container (Only visible for pinned note) -->
+            <div id="checklist-container" class="hidden">
+                <div id="todo-list"></div>
+                <button id="add-todo-item" class="add-todo-text">+ Add Item</button>
+            </div>
+
+            <button class="delete-link" id="delete-note">Delete Note</button>
         </div>
     </div>
 
@@ -193,8 +197,20 @@
                 <input type="text" id="edit-display-name" class="input-field">
             </div>
             <div class="modal-actions">
-                <button type="button" class="btn-cancel" id="cancel-profile">Cancel</button>
+                <button type="button" class="btn-text" id="cancel-profile">Cancel</button>
                 <button type="button" class="btn-primary" id="save-profile">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. NEW NOTE TITLE MODAL (Small) -->
+    <div class="modal-overlay" id="new-title-modal">
+        <div class="modal-card" style="max-width: 350px;">
+            <h2 class="modal-title">New Note</h2>
+            <input type="text" id="new-note-title-input" class="input-field" placeholder="Note Title">
+            <div class="modal-actions">
+                <button type="button" class="btn-text" id="cancel-new-title">Cancel</button>
+                <button type="button" class="btn-primary" id="create-note-btn">Create</button>
             </div>
         </div>
     </div>
