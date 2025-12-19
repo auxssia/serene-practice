@@ -32,7 +32,7 @@ const elements = {
     menuEmail: document.getElementById('menu-email'),
     
     // Date
-    dateNav: document.querySelector('.date-nav'), // Select the whole container
+    dateNav: document.querySelector('.date-nav'),
     displayDate: document.getElementById('display-date'),
     datePicker: document.getElementById('date-picker'),
     jumpToday: document.getElementById('jump-today'),
@@ -72,38 +72,55 @@ async function checkSession() {
 
 elements.authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log("Attempting login...");
+
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const fullName = document.getElementById('full-name').value;
     
-    elements.authBtn.textContent = 'Wait...';
+    elements.authBtn.textContent = 'Connecting...';
     elements.authBtn.disabled = true;
     elements.authError.textContent = '';
 
-    let error = null;
+    try {
+        let result;
+        let error;
 
-    if (isSignUpMode) {
-        const { error: signUpError } = await supabase.auth.signUp({
-            email, password,
-            options: { data: { full_name: fullName } }
-        });
-        error = signUpError;
-        if (!error) {
-            alert("Account created! Logging in...");
-            const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-            if(!signInError) window.location.reload();
+        if (isSignUpMode) {
+            console.log("Mode: Sign Up");
+            const signUpResponse = await supabase.auth.signUp({
+                email, 
+                password,
+                options: { data: { full_name: fullName } }
+            });
+            error = signUpResponse.error;
+            if (!error) {
+                alert("Account created! Logging you in...");
+                const signInResponse = await supabase.auth.signInWithPassword({ email, password });
+                result = signInResponse.data;
+                error = signInResponse.error;
+            }
+        } else {
+            console.log("Mode: Sign In");
+            const signInResponse = await supabase.auth.signInWithPassword({ email, password });
+            result = signInResponse.data;
+            error = signInResponse.error;
         }
-    } else {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        error = signInError;
-        if (data.user) {
-            currentUser = data.user;
+
+        if (error) {
+            console.error("Supabase Error:", error);
+            throw error;
+        }
+
+        if (result && result.user) {
+            console.log("Login Successful");
+            currentUser = result.user;
             showApp();
         }
-    }
 
-    if (error) {
-        elements.authError.textContent = error.message;
+    } catch (err) {
+        console.error("Login Error:", err);
+        elements.authError.textContent = err.message || "Connection failed.";
         elements.authBtn.textContent = isSignUpMode ? 'Create Account' : 'Sign In';
         elements.authBtn.disabled = false;
     }
@@ -205,10 +222,9 @@ document.getElementById('export-btn').addEventListener('click', async () => {
     }
 });
 
-// --- 6. DATE LOGIC (Refined) ---
+// --- 6. DATE LOGIC ---
 
 function renderDate() {
-    // Format: 27, November, 2025 (Thursday)
     const day = selectedDate.getDate();
     const month = selectedDate.toLocaleString('default', { month: 'long' });
     const year = selectedDate.getFullYear();
@@ -217,17 +233,15 @@ function renderDate() {
     elements.displayDate.textContent = `${day}, ${month}, ${year} (${weekday})`;
     elements.datePicker.value = selectedDate.toISOString().split('T')[0];
     
-    // Show/Hide "Jump to Today"
     const todayStr = new Date().toISOString().split('T')[0];
     const selStr = selectedDate.toISOString().split('T')[0];
     if(todayStr !== selStr) elements.jumpToday.classList.remove('hidden');
     else elements.jumpToday.classList.add('hidden');
 }
 
-// Smart Click: White background opens calendar, arrows don't.
 elements.dateNav.addEventListener('click', (e) => {
-    if (e.target.closest('.nav-btn')) return; // Ignore arrows
-    elements.datePicker.showPicker(); // Open Calendar
+    if (e.target.closest('.nav-btn')) return;
+    elements.datePicker.showPicker();
 });
 
 document.getElementById('prev-day').addEventListener('click', () => {
@@ -352,10 +366,8 @@ async function fetchNotes() {
 function renderNotesList() {
     elements.notesList.innerHTML = '';
     
-    // 1. Pinned "Daily Intentions"
     let pinned = notes.find(n => n.is_pinned);
     
-    // Create it IMMEDIATELY if missing
     if (!pinned) {
         createPinnedNote();
         return; 
@@ -367,7 +379,6 @@ function renderNotesList() {
     pinDiv.onclick = () => openCanvas(pinned);
     elements.notesList.appendChild(pinDiv);
     
-    // 2. Regular Notes
     notes.filter(n => !n.is_pinned).forEach(note => {
         const div = document.createElement('div');
         div.className = 'note-item';
@@ -392,7 +403,6 @@ async function createPinnedNote() {
     }
 }
 
-// Open "Add Title" Modal
 document.getElementById('add-note-title-btn').addEventListener('click', () => {
     document.getElementById('new-note-title-input').value = '';
     elements.newTitleModal.classList.add('active');
@@ -409,12 +419,11 @@ document.getElementById('create-note-btn').addEventListener('click', async () =>
     
     if(!error) {
         elements.newTitleModal.classList.remove('active');
-        await fetchNotes(); // Refresh list
-        openCanvas(data[0]); // Open the new note immediately
+        await fetchNotes();
+        openCanvas(data[0]);
     }
 });
 
-// CANVAS LOGIC
 function openCanvas(note) {
     document.getElementById('note-id').value = note.id;
     elements.noteTitle.value = note.title;
@@ -434,7 +443,6 @@ function openCanvas(note) {
     elements.noteModal.classList.add('active');
 }
 
-// Saving on "Done"
 document.getElementById('close-note').addEventListener('click', async () => {
     await saveCurrentNote();
     elements.noteModal.classList.remove('active');
@@ -456,7 +464,6 @@ async function saveCurrentNote() {
     }
 }
 
-// Checklist Logic
 function renderChecklist(jsonContent) {
     elements.todoList.innerHTML = '';
     let items = [];
@@ -511,7 +518,6 @@ async function updateChecklist(modifyFn) {
     renderChecklist(newContent);
 }
 
-// Delete Note
 document.getElementById('delete-note').addEventListener('click', async () => {
     const id = document.getElementById('note-id').value;
     if(pinnedNoteId === id) {
