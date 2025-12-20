@@ -3,8 +3,13 @@
 const SUPABASE_URL = 'https://cpecdifwbumqoupvicsg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwZWNkaWZ3YnVtcW91cHZpY3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMzQxMzIsImV4cCI6MjA3OTgxMDEzMn0.eOgWTr5X1L6nhS5TJoeqx3hfgV6DrA1qusVP0lUUAZE';
 
+// *** TEMPORARY BYPASS SWITCH ***
+// Set this to TRUE to skip login. Set to FALSE to use real login.
+const BYPASS_MODE = true; 
+
 // Initialize Supabase
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// We check if window.supabase exists to avoid errors if the CDN failed
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 // --- 2. STATE ---
 let currentUser = null;
@@ -58,9 +63,27 @@ const elements = {
     saveBtn: document.getElementById('save-btn')
 };
 
-// --- 4. AUTH ---
+// --- 4. AUTHENTICATION & BYPASS ---
 
 async function checkSession() {
+    if (BYPASS_MODE) {
+        console.warn("⚠️ BYPASS MODE ENABLED");
+        // Create a Fake User
+        currentUser = {
+            id: 'bypass-user-id-123', // Fixed fake ID so your data persists in bypass
+            email: 'doctor@bypass.com',
+            user_metadata: { full_name: 'Dr. Bypass' }
+        };
+        showApp();
+        return;
+    }
+
+    if (!supabase) {
+        console.error("Supabase not initialized. Check your CDN script tag.");
+        return;
+    }
+
+    // Normal Real Login Check
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
         currentUser = session.user;
@@ -72,55 +95,42 @@ async function checkSession() {
 
 elements.authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log("Attempting login...");
+    if (BYPASS_MODE) return; 
 
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const fullName = document.getElementById('full-name').value;
     
-    elements.authBtn.textContent = 'Connecting...';
+    elements.authBtn.textContent = 'Wait...';
     elements.authBtn.disabled = true;
     elements.authError.textContent = '';
 
     try {
-        let result;
         let error;
 
         if (isSignUpMode) {
-            console.log("Mode: Sign Up");
             const signUpResponse = await supabase.auth.signUp({
-                email, 
-                password,
-                options: { data: { full_name: fullName } }
+                email, password, options: { data: { full_name: fullName } }
             });
             error = signUpResponse.error;
             if (!error) {
-                alert("Account created! Logging you in...");
+                alert("Account created! Logging in...");
                 const signInResponse = await supabase.auth.signInWithPassword({ email, password });
-                result = signInResponse.data;
-                error = signInResponse.error;
+                if(!signInResponse.error) window.location.reload();
             }
         } else {
-            console.log("Mode: Sign In");
             const signInResponse = await supabase.auth.signInWithPassword({ email, password });
-            result = signInResponse.data;
             error = signInResponse.error;
+            if (signInResponse.data.user) {
+                currentUser = signInResponse.data.user;
+                showApp();
+            }
         }
 
-        if (error) {
-            console.error("Supabase Error:", error);
-            throw error;
-        }
-
-        if (result && result.user) {
-            console.log("Login Successful");
-            currentUser = result.user;
-            showApp();
-        }
+        if (error) throw error;
 
     } catch (err) {
-        console.error("Login Error:", err);
-        elements.authError.textContent = err.message || "Connection failed.";
+        elements.authError.textContent = err.message;
         elements.authBtn.textContent = isSignUpMode ? 'Create Account' : 'Sign In';
         elements.authBtn.disabled = false;
     }
@@ -135,7 +145,7 @@ elements.toggleAuth.addEventListener('click', () => {
     document.getElementById('full-name').required = isSignUpMode;
 });
 
-// --- 5. PROFILE & UI ---
+// --- 5. APP UI LOGIC ---
 
 elements.profileAvatar.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -145,6 +155,10 @@ elements.profileAvatar.addEventListener('click', (e) => {
 window.addEventListener('click', () => elements.profileMenu.classList.add('hidden'));
 
 document.getElementById('logout-btn').addEventListener('click', async () => {
+    if (BYPASS_MODE) {
+        alert("You are in Bypass Mode. To logout, set BYPASS_MODE = false in code.");
+        return;
+    }
     await supabase.auth.signOut();
     window.location.reload();
 });
@@ -157,12 +171,11 @@ function showAuth() {
 function showApp() {
     elements.authView.style.display = 'none';
     elements.appView.style.display = 'block';
-    
     updateGreeting();
     
     // Set Profile Info
     elements.menuEmail.textContent = currentUser.email;
-    const name = currentUser.user_metadata.full_name || "Dr";
+    const name = currentUser.user_metadata?.full_name || "Dr";
     elements.profileAvatar.textContent = name.substring(0, 2).toUpperCase();
     elements.menuName.textContent = name;
 
@@ -176,24 +189,28 @@ function updateGreeting() {
     let greeting = "Good Morning";
     if (hour >= 12) greeting = "Good Afternoon";
     if (hour >= 17) greeting = "Good Evening";
-    const name = currentUser.user_metadata.full_name || "Dr. Pallavi";
+    const name = currentUser.user_metadata?.full_name || "Doctor";
     elements.greeting.textContent = `${greeting}, ${name} 🌼`;
 }
 
 // Edit Profile
 document.getElementById('edit-profile-btn').addEventListener('click', () => {
-    document.getElementById('edit-display-name').value = currentUser.user_metadata.full_name || '';
+    document.getElementById('edit-display-name').value = currentUser.user_metadata?.full_name || '';
     elements.profileModal.classList.add('active');
 });
 
 document.getElementById('save-profile').addEventListener('click', async () => {
     const newName = document.getElementById('edit-display-name').value;
-    const { data, error } = await supabase.auth.updateUser({ data: { full_name: newName } });
-    if (!error) {
-        currentUser = data.user;
+    if(BYPASS_MODE) {
+        currentUser.user_metadata.full_name = newName;
         updateGreeting();
-        elements.profileAvatar.textContent = newName.substring(0, 2).toUpperCase();
-        elements.menuName.textContent = newName;
+        elements.profileModal.classList.remove('active');
+        return;
+    }
+    const { error } = await supabase.auth.updateUser({ data: { full_name: newName } });
+    if (!error) {
+        currentUser.user_metadata.full_name = newName;
+        updateGreeting();
         elements.profileModal.classList.remove('active');
     }
 });
@@ -202,7 +219,7 @@ document.getElementById('cancel-profile').addEventListener('click', () => elemen
 
 // Export CSV
 document.getElementById('export-btn').addEventListener('click', async () => {
-    const { data, error } = await supabase.from('appointments').select('*').eq('user_id', currentUser.id);
+    const { data } = await supabase.from('appointments').select('*').eq('user_id', currentUser.id);
     if (data && data.length > 0) {
         const headers = ['Client Name', 'Date', 'Time', 'Type', 'Mode', 'Notes'];
         const csvRows = [headers.join(',')];
@@ -269,8 +286,12 @@ function updateDateView() { renderDate(); fetchAppointments(); }
 async function fetchAppointments() {
     elements.appList.innerHTML = '<div class="empty-state">Loading...</div>';
     const dateStr = selectedDate.toISOString().split('T')[0];
-    const { data } = await supabase.from('appointments').select('*')
+    
+    // In bypass mode, we might not get data if RLS blocks it, but the SQL you ran earlier should allow it
+    const { data, error } = await supabase.from('appointments').select('*')
         .eq('user_id', currentUser.id).eq('date', dateStr).order('time', { ascending: true });
+    
+    if (error) console.error("Appt Error:", error);
     appointments = data || [];
     renderAppointments();
 }
@@ -337,8 +358,22 @@ elements.sessionForm.addEventListener('submit', async (e) => {
         notes: document.getElementById('session-notes').value
     };
     const editId = document.getElementById('edit-id').value;
-    if (editId) await supabase.from('appointments').update(formData).eq('id', editId);
-    else await supabase.from('appointments').insert([formData]);
+    
+    let error;
+    if (editId) {
+        const res = await supabase.from('appointments').update(formData).eq('id', editId);
+        error = res.error;
+    } else {
+        const res = await supabase.from('appointments').insert([formData]);
+        error = res.error;
+    }
+
+    if(error) {
+        console.error("Save Error:", error);
+        alert("Error saving: " + error.message);
+        elements.saveBtn.textContent = "Save";
+        return;
+    }
 
     elements.modal.classList.remove('active');
     elements.saveBtn.textContent = "Save";
@@ -358,7 +393,8 @@ window.deleteSession = async (id) => {
 // --- 8. NOTES SYSTEM ---
 
 async function fetchNotes() {
-    const { data } = await supabase.from('notes').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('notes').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+    if(error) console.error("Notes Error:", error);
     notes = data || [];
     renderNotesList();
 }
@@ -389,7 +425,7 @@ function renderNotesList() {
 }
 
 async function createPinnedNote() {
-    const { data, error } = await supabase.from('notes').insert([{
+    const { data } = await supabase.from('notes').insert([{
         user_id: currentUser.id, 
         title: 'Daily Intentions', 
         content: '[]', 
@@ -511,6 +547,7 @@ window.uncheckAll = async () => {
 
 async function updateChecklist(modifyFn) {
     const { data } = await supabase.from('notes').select('*').eq('id', document.getElementById('note-id').value).single();
+    if (!data) return;
     let items = JSON.parse(data.content || '[]');
     modifyFn(items);
     const newContent = JSON.stringify(items);
@@ -531,4 +568,5 @@ document.getElementById('delete-note').addEventListener('click', async () => {
     }
 });
 
+// Start
 checkSession();
