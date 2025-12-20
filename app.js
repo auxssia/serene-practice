@@ -3,12 +3,8 @@
 const SUPABASE_URL = 'https://cpecdifwbumqoupvicsg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwZWNkaWZ3YnVtcW91cHZpY3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMzQxMzIsImV4cCI6MjA3OTgxMDEzMn0.eOgWTr5X1L6nhS5TJoeqx3hfgV6DrA1qusVP0lUUAZE';
 
-// *** TEMPORARY BYPASS SWITCH ***
-// Set this to TRUE to skip login. Set to FALSE to use real login.
-const BYPASS_MODE = true; 
-
 // Initialize Supabase
-// Renamed to 'supabaseClient' to avoid conflict with the global 'supabase' variable from the CDN
+// Renamed to 'supabaseClient' to avoid conflict with external library
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 // --- 2. STATE ---
@@ -63,27 +59,14 @@ const elements = {
     saveBtn: document.getElementById('save-btn')
 };
 
-// --- 4. AUTHENTICATION & BYPASS ---
+// --- 4. AUTHENTICATION (REAL MODE) ---
 
 async function checkSession() {
-    if (BYPASS_MODE) {
-        console.warn("⚠️ BYPASS MODE ENABLED");
-        // Create a Fake User
-        currentUser = {
-            id: 'bypass-user-id-123', // Fixed fake ID so your data persists in bypass
-            email: 'doctor@bypass.com',
-            user_metadata: { full_name: 'Dr. Bypass' }
-        };
-        showApp();
-        return;
-    }
-
     if (!supabaseClient) {
-        console.error("Supabase not initialized. Check your CDN script tag.");
+        console.error("Supabase not initialized. Check internet connection.");
         return;
     }
 
-    // Normal Real Login Check
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         currentUser = session.user;
@@ -95,13 +78,11 @@ async function checkSession() {
 
 elements.authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (BYPASS_MODE) return; 
-
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const fullName = document.getElementById('full-name').value;
     
-    elements.authBtn.textContent = 'Wait...';
+    elements.authBtn.textContent = 'Connecting...';
     elements.authBtn.disabled = true;
     elements.authError.textContent = '';
 
@@ -110,11 +91,13 @@ elements.authForm.addEventListener('submit', async (e) => {
 
         if (isSignUpMode) {
             const signUpResponse = await supabaseClient.auth.signUp({
-                email, password, options: { data: { full_name: fullName } }
+                email, 
+                password,
+                options: { data: { full_name: fullName } }
             });
             error = signUpResponse.error;
             if (!error) {
-                alert("Account created! Logging in...");
+                alert("Account created! Logging you in...");
                 const signInResponse = await supabaseClient.auth.signInWithPassword({ email, password });
                 if(!signInResponse.error) window.location.reload();
             }
@@ -155,10 +138,6 @@ elements.profileAvatar.addEventListener('click', (e) => {
 window.addEventListener('click', () => elements.profileMenu.classList.add('hidden'));
 
 document.getElementById('logout-btn').addEventListener('click', async () => {
-    if (BYPASS_MODE) {
-        alert("You are in Bypass Mode. To logout, set BYPASS_MODE = false in code.");
-        return;
-    }
     await supabaseClient.auth.signOut();
     window.location.reload();
 });
@@ -171,6 +150,7 @@ function showAuth() {
 function showApp() {
     elements.authView.style.display = 'none';
     elements.appView.style.display = 'block';
+    
     updateGreeting();
     
     // Set Profile Info
@@ -201,16 +181,12 @@ document.getElementById('edit-profile-btn').addEventListener('click', () => {
 
 document.getElementById('save-profile').addEventListener('click', async () => {
     const newName = document.getElementById('edit-display-name').value;
-    if(BYPASS_MODE) {
-        currentUser.user_metadata.full_name = newName;
-        updateGreeting();
-        elements.profileModal.classList.remove('active');
-        return;
-    }
-    const { error } = await supabaseClient.auth.updateUser({ data: { full_name: newName } });
+    const { data, error } = await supabaseClient.auth.updateUser({ data: { full_name: newName } });
     if (!error) {
-        currentUser.user_metadata.full_name = newName;
+        currentUser = data.user;
         updateGreeting();
+        elements.profileAvatar.textContent = newName.substring(0, 2).toUpperCase();
+        elements.menuName.textContent = newName;
         elements.profileModal.classList.remove('active');
     }
 });
@@ -242,6 +218,7 @@ document.getElementById('export-btn').addEventListener('click', async () => {
 // --- 6. DATE LOGIC ---
 
 function renderDate() {
+    // Format: 27, November, 2025 (Thursday)
     const day = selectedDate.getDate();
     const month = selectedDate.toLocaleString('default', { month: 'long' });
     const year = selectedDate.getFullYear();
@@ -250,12 +227,14 @@ function renderDate() {
     elements.displayDate.textContent = `${day}, ${month}, ${year} (${weekday})`;
     elements.datePicker.value = selectedDate.toISOString().split('T')[0];
     
+    // Show/Hide "Jump to Today"
     const todayStr = new Date().toISOString().split('T')[0];
     const selStr = selectedDate.toISOString().split('T')[0];
     if(todayStr !== selStr) elements.jumpToday.classList.remove('hidden');
     else elements.jumpToday.classList.add('hidden');
 }
 
+// Click anywhere on the white bar to open calendar (ignoring arrows)
 elements.dateNav.addEventListener('click', (e) => {
     if (e.target.closest('.nav-btn')) return;
     elements.datePicker.showPicker();
@@ -286,8 +265,6 @@ function updateDateView() { renderDate(); fetchAppointments(); }
 async function fetchAppointments() {
     elements.appList.innerHTML = '<div class="empty-state">Loading...</div>';
     const dateStr = selectedDate.toISOString().split('T')[0];
-    
-    // In bypass mode, we might not get data if RLS blocks it, but the SQL you ran earlier should allow it
     const { data, error } = await supabaseClient.from('appointments').select('*')
         .eq('user_id', currentUser.id).eq('date', dateStr).order('time', { ascending: true });
     
