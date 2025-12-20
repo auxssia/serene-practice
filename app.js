@@ -8,8 +8,8 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const BYPASS_MODE = true; 
 
 // Initialize Supabase
-// We check if window.supabase exists to avoid errors if the CDN failed
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+// Renamed to 'supabaseClient' to avoid conflict with the global 'supabase' variable from the CDN
+const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 // --- 2. STATE ---
 let currentUser = null;
@@ -78,13 +78,13 @@ async function checkSession() {
         return;
     }
 
-    if (!supabase) {
+    if (!supabaseClient) {
         console.error("Supabase not initialized. Check your CDN script tag.");
         return;
     }
 
     // Normal Real Login Check
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         currentUser = session.user;
         showApp();
@@ -109,17 +109,17 @@ elements.authForm.addEventListener('submit', async (e) => {
         let error;
 
         if (isSignUpMode) {
-            const signUpResponse = await supabase.auth.signUp({
+            const signUpResponse = await supabaseClient.auth.signUp({
                 email, password, options: { data: { full_name: fullName } }
             });
             error = signUpResponse.error;
             if (!error) {
                 alert("Account created! Logging in...");
-                const signInResponse = await supabase.auth.signInWithPassword({ email, password });
+                const signInResponse = await supabaseClient.auth.signInWithPassword({ email, password });
                 if(!signInResponse.error) window.location.reload();
             }
         } else {
-            const signInResponse = await supabase.auth.signInWithPassword({ email, password });
+            const signInResponse = await supabaseClient.auth.signInWithPassword({ email, password });
             error = signInResponse.error;
             if (signInResponse.data.user) {
                 currentUser = signInResponse.data.user;
@@ -159,7 +159,7 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
         alert("You are in Bypass Mode. To logout, set BYPASS_MODE = false in code.");
         return;
     }
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     window.location.reload();
 });
 
@@ -207,7 +207,7 @@ document.getElementById('save-profile').addEventListener('click', async () => {
         elements.profileModal.classList.remove('active');
         return;
     }
-    const { error } = await supabase.auth.updateUser({ data: { full_name: newName } });
+    const { error } = await supabaseClient.auth.updateUser({ data: { full_name: newName } });
     if (!error) {
         currentUser.user_metadata.full_name = newName;
         updateGreeting();
@@ -219,7 +219,7 @@ document.getElementById('cancel-profile').addEventListener('click', () => elemen
 
 // Export CSV
 document.getElementById('export-btn').addEventListener('click', async () => {
-    const { data } = await supabase.from('appointments').select('*').eq('user_id', currentUser.id);
+    const { data } = await supabaseClient.from('appointments').select('*').eq('user_id', currentUser.id);
     if (data && data.length > 0) {
         const headers = ['Client Name', 'Date', 'Time', 'Type', 'Mode', 'Notes'];
         const csvRows = [headers.join(',')];
@@ -288,7 +288,7 @@ async function fetchAppointments() {
     const dateStr = selectedDate.toISOString().split('T')[0];
     
     // In bypass mode, we might not get data if RLS blocks it, but the SQL you ran earlier should allow it
-    const { data, error } = await supabase.from('appointments').select('*')
+    const { data, error } = await supabaseClient.from('appointments').select('*')
         .eq('user_id', currentUser.id).eq('date', dateStr).order('time', { ascending: true });
     
     if (error) console.error("Appt Error:", error);
@@ -361,10 +361,10 @@ elements.sessionForm.addEventListener('submit', async (e) => {
     
     let error;
     if (editId) {
-        const res = await supabase.from('appointments').update(formData).eq('id', editId);
+        const res = await supabaseClient.from('appointments').update(formData).eq('id', editId);
         error = res.error;
     } else {
-        const res = await supabase.from('appointments').insert([formData]);
+        const res = await supabaseClient.from('appointments').insert([formData]);
         error = res.error;
     }
 
@@ -386,14 +386,14 @@ elements.sessionForm.addEventListener('submit', async (e) => {
 
 window.deleteSession = async (id) => {
     if(!confirm("Remove this session?")) return;
-    await supabase.from('appointments').delete().eq('id', id);
+    await supabaseClient.from('appointments').delete().eq('id', id);
     fetchAppointments();
 };
 
 // --- 8. NOTES SYSTEM ---
 
 async function fetchNotes() {
-    const { data, error } = await supabase.from('notes').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+    const { data, error } = await supabaseClient.from('notes').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
     if(error) console.error("Notes Error:", error);
     notes = data || [];
     renderNotesList();
@@ -425,7 +425,7 @@ function renderNotesList() {
 }
 
 async function createPinnedNote() {
-    const { data } = await supabase.from('notes').insert([{
+    const { data } = await supabaseClient.from('notes').insert([{
         user_id: currentUser.id, 
         title: 'Daily Intentions', 
         content: '[]', 
@@ -449,7 +449,7 @@ document.getElementById('create-note-btn').addEventListener('click', async () =>
     const title = document.getElementById('new-note-title-input').value;
     if(!title) return;
     
-    const { data, error } = await supabase.from('notes').insert([
+    const { data, error } = await supabaseClient.from('notes').insert([
         { user_id: currentUser.id, title: title, content: '', type: 'text' }
     ]).select();
     
@@ -492,10 +492,10 @@ async function saveCurrentNote() {
     if (id) {
         let content;
         if (pinnedNoteId === id) { 
-             await supabase.from('notes').update({ title }).eq('id', id);
+             await supabaseClient.from('notes').update({ title }).eq('id', id);
         } else {
              content = elements.noteContent.value;
-             await supabase.from('notes').update({ title, content }).eq('id', id);
+             await supabaseClient.from('notes').update({ title, content }).eq('id', id);
         }
     }
 }
@@ -546,12 +546,12 @@ window.uncheckAll = async () => {
 };
 
 async function updateChecklist(modifyFn) {
-    const { data } = await supabase.from('notes').select('*').eq('id', document.getElementById('note-id').value).single();
+    const { data } = await supabaseClient.from('notes').select('*').eq('id', document.getElementById('note-id').value).single();
     if (!data) return;
     let items = JSON.parse(data.content || '[]');
     modifyFn(items);
     const newContent = JSON.stringify(items);
-    await supabase.from('notes').update({ content: newContent }).eq('id', data.id);
+    await supabaseClient.from('notes').update({ content: newContent }).eq('id', data.id);
     renderChecklist(newContent);
 }
 
@@ -562,7 +562,7 @@ document.getElementById('delete-note').addEventListener('click', async () => {
         return;
     }
     if(confirm("Delete this note?")) {
-        await supabase.from('notes').delete().eq('id', id);
+        await supabaseClient.from('notes').delete().eq('id', id);
         elements.noteModal.classList.remove('active');
         fetchNotes();
     }
