@@ -2,7 +2,7 @@
 // SET DRY_RUN = false TO ENABLE REAL SENDING
 const REMINDER_CRON_HOUR_UTC = 11;
 const REMINDER_CRON_MINUTE_UTC = 30;
-const DRY_RUN = true;
+const DRY_RUN = false;
 
 /**
  * sendReminders.js
