@@ -1,6 +1,5 @@
 // === REMINDER CONFIGURATION ===
-// Change this hour if needed
-// 11:30 UTC = 5:00 PM IST
+// SET DRY_RUN = false TO ENABLE REAL SENDING
 const REMINDER_CRON_HOUR_UTC = 11;
 const REMINDER_CRON_MINUTE_UTC = 30;
 const DRY_RUN = true;
@@ -9,20 +8,37 @@ const DRY_RUN = true;
  * sendReminders.js
  * 
  * Fetches appointments scheduled for tomorrow that have 'send_reminder' set to true
- * and logs (or sends) WhatsApp reminders.
+ * and sends WhatsApp reminders using Twilio.
  * 
  * Required Environment Variables:
  * - SUPABASE_URL: Your Supabase project URL
  * - SUPABASE_SERVICE_ROLE_KEY: Your Supabase service_role key (BYPASSES RLS)
+ * - TWILIO_ACCOUNT_SID: Your Twilio Account SID
+ * - TWILIO_AUTH_TOKEN: Your Twilio Auth Token
+ * - TWILIO_WHATSAPP_NUMBER: Your Twilio WhatsApp number (e.g., whatsapp:+14155238886)
  */
+
+const twilio = require('twilio');
 
 async function sendReminders() {
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const fromWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER;
 
     if (!supabaseUrl || !supabaseKey) {
         console.error('Error: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required.');
         process.exit(1);
+    }
+
+    let twilioClient;
+    if (!DRY_RUN) {
+        if (!accountSid || !authToken || !fromWhatsApp) {
+            console.error('Error: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_WHATSAPP_NUMBER are required for live sending.');
+            process.exit(1);
+        }
+        twilioClient = twilio(accountSid, authToken);
     }
 
     // Calculate "Tomorrow" date string (YYYY-MM-DD)
@@ -61,20 +77,35 @@ async function sendReminders() {
 
         for (const appt of appointments) {
             const timeClean = (appt.time || 'HH:MM').substring(0, 5);
-            const logMsg = `Reminder to be sent to ${appt.phone || 'UNKNOWN'} at ${timeClean} (for client: ${appt.client_name})`;
+            const phone = appt.phone;
+
+            if (!phone) {
+                console.log(`Skipping appointment for ${appt.client_name} - No phone number.`);
+                continue;
+            }
+
+            const messageText =
+                `Reminder 🌿\n\n` +
+                `You have a session tomorrow at ${timeClean}.\n\n` +
+                `- Serene Practice`;
+
+            const logMsg = `Reminder to be sent to ${phone} at ${timeClean} (for client: ${appt.client_name})`;
 
             if (DRY_RUN) {
                 console.log(`[DRY RUN] ${logMsg}`);
+                console.log(`[MESSAGE] ${messageText.replace(/\n/g, '\\n')}`);
             } else {
-                // TODO: Implement Twilio / WhatsApp API logic here
                 console.log(`[SENDING] ${logMsg}`);
-
-                // Placeholder for Twilio integration:
-                // await twilioClient.messages.create({
-                //     from: 'whatsapp:+14155238886', 
-                //     to: `whatsapp:${appt.phone}`,
-                //     body: `Hi ${appt.client_name}, this is a reminder for your session tomorrow at ${timeClean}.`
-                // });
+                try {
+                    await twilioClient.messages.create({
+                        from: fromWhatsApp,
+                        to: `whatsapp:${phone}`,
+                        body: messageText
+                    });
+                    console.log(`[SUCCESS] Sent to ${phone}`);
+                } catch (sendErr) {
+                    console.error(`[ERROR] Failed to send to ${phone}:`, sendErr.message);
+                }
             }
         }
 
