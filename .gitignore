@@ -1,0 +1,16 @@
+# Supabase config (local only)
+js/config.js
+
+# Environment files
+.env
+
+# Node modules (future-proof)
+node_modules/
+package-lock.json
+
+# Logs
+*.log
+
+#personal reference
+clarifications.md
+logs.md
