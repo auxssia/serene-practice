@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serene Practice</title>
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
-    
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap"
+        rel="stylesheet">
+
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
 
     <!-- 1. AUTH SCREEN -->
@@ -22,7 +27,7 @@
         <div class="auth-card">
             <h1 class="logo">Serene<span>.</span></h1>
             <p class="auth-subtitle">A calm space for your practice.</p>
-            
+
             <form id="auth-form">
                 <div class="input-group" id="name-group" style="display:none;">
                     <label>Full Name</label>
@@ -54,11 +59,11 @@
                 <h1 id="greeting-text">Good Morning</h1>
                 <p>Let's focus on today.</p>
             </div>
-            
+
             <!-- Elegant Circular Profile -->
             <div class="profile-container">
                 <div id="profile-avatar" class="avatar-circle">Dr</div>
-                
+
                 <!-- Dropdown Menu -->
                 <div id="profile-menu" class="profile-dropdown hidden">
                     <div class="menu-header">
@@ -84,6 +89,11 @@
                 </div>
                 <button class="nav-btn" id="next-day">→</button>
             </div>
+            <!-- Block/Unblock Button -->
+            <button id="toggle-block-btn" class="today-icon-btn block-btn" title="Block/Unblock Date">
+                🔒
+            </button>
+
             <!-- Subtle "Return to Today" Icon (Hidden when on today) -->
             <button id="jump-today" class="today-icon-btn hidden" title="Go to Today">
                 ↺
@@ -118,7 +128,7 @@
             <h2 class="modal-title" id="modal-title">New Session</h2>
             <form id="session-form">
                 <input type="hidden" id="edit-id">
-                
+
                 <div class="input-group">
                     <label>Client Name</label>
                     <input type="text" id="client-name" class="input-field" required>
@@ -153,6 +163,23 @@
                 </div>
 
                 <div class="input-group">
+                    <label>WhatsApp Number (with country code)</label>
+                    <input type="text" id="phone-number" class="input-field" placeholder="+91 00000 00000">
+                </div>
+
+                <div class="grid-2">
+                    <div class="input-group checkbox-group">
+                        <input type="checkbox" id="send-reminder">
+                        <label for="send-reminder">Send Reminder</label>
+                    </div>
+
+                    <div class="input-group checkbox-group" id="repeat-group">
+                        <input type="checkbox" id="repeat-weekly">
+                        <label for="repeat-weekly">Repeat Weekly</label>
+                    </div>
+                </div>
+
+                <div class="input-group">
                     <label>Notes</label>
                     <textarea id="session-notes" class="input-field" rows="3"></textarea>
                 </div>
@@ -169,15 +196,15 @@
     <div class="modal-overlay" id="note-modal">
         <div class="modal-card canvas-card">
             <input type="hidden" id="note-id">
-            
+
             <div class="canvas-header">
                 <input type="text" id="note-title" class="canvas-title" placeholder="Untitled Note">
                 <button class="btn-text" id="close-note">Done</button>
             </div>
-            
+
             <!-- Standard Text Area -->
             <textarea id="note-content" class="canvas-content" placeholder="Start writing..."></textarea>
-            
+
             <!-- Checklist Container (Only visible for pinned note) -->
             <div id="checklist-container" class="hidden">
                 <div id="todo-list"></div>
@@ -215,6 +242,7 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
+
 </html>

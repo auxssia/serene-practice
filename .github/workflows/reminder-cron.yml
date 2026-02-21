@@ -1,0 +1,28 @@
+name: WhatsApp Reminder Cron
+
+on:
+  schedule:
+    # 11:30 AM UTC translates to 5:00 PM IST (UTC+5:30)
+    # This is when the automated reminder script will run daily.
+    - cron: '30 11 * * *'
+  workflow_dispatch:
+    # Allows for manual execution from the GitHub Actions tab.
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Reminder Script
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/sendReminders.js
