@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serene Practice</title>
-    <!-- Favicon -->
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
+    <link rel="manifest" href="/serene-practice/manifest.json">
+    <meta name="theme-color" content="#F9F7F2">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -262,6 +263,15 @@
     </div>
 
     <script type="module" src="js/main.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/serene-practice/sw.js')
+                    .then(reg => console.log("Service Worker Registered"))
+                    .catch(err => console.log("Service Worker Error", err));
+            });
+        }
+    </script>
 </body>
 
 </html>
