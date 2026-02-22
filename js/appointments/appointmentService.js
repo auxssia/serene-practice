@@ -7,6 +7,17 @@ export const appointmentService = {
     },
     async saveAppointment(formData, editId) {
         if (editId) {
+            // Check if date or time changed to reset reminder status
+            const { data: existing } = await supabaseClient
+                .from('appointments')
+                .select('date, time')
+                .eq('id', editId)
+                .single();
+
+            if (existing && (existing.date !== formData.date || existing.time !== formData.time)) {
+                formData.reminder_sent = false;
+            }
+
             return await supabaseClient.from('appointments').update(formData).eq('id', editId);
         } else {
             return await supabaseClient.from('appointments').insert([formData]);

@@ -50,7 +50,7 @@ async function sendReminders() {
     console.log(`Checking appointments for: ${tomorrowStr}`);
 
     try {
-        const queryUrl = `${supabaseUrl}/rest/v1/appointments?date=eq.${tomorrowStr}&send_reminder=eq.true`;
+        const queryUrl = `${supabaseUrl}/rest/v1/appointments?date=eq.${tomorrowStr}&send_reminder=eq.true&reminder_sent=eq.false`;
 
         const response = await fetch(queryUrl, {
             method: 'GET',
@@ -103,6 +103,26 @@ async function sendReminders() {
                         body: messageText
                     });
                     console.log(`[SUCCESS] Sent to ${phone}`);
+
+                    // Mark as sent in Supabase
+                    const patchUrl = `${supabaseUrl}/rest/v1/appointments?id=eq.${appt.id}`;
+                    const patchResponse = await fetch(patchUrl, {
+                        method: 'PATCH',
+                        headers: {
+                            'apikey': supabaseKey,
+                            'Authorization': `Bearer ${supabaseKey}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({ reminder_sent: true })
+                    });
+
+                    if (patchResponse.ok) {
+                        console.log(`[MARKED SENT] Appointment ${appt.id}`);
+                    } else {
+                        const patchErr = await patchResponse.text();
+                        console.error(`[ERROR] Failed to mark appointment ${appt.id} as sent:`, patchErr);
+                    }
                 } catch (sendErr) {
                     console.error(`[ERROR] Failed to send to ${phone}:`, sendErr.message);
                 }
