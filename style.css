@@ -20,6 +20,12 @@
     padding: 0;
 }
 
+html,
+body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
 body {
     background-color: var(--bg-paper);
     color: var(--text-charcoal);
@@ -158,6 +164,7 @@ body {
     margin: 0 auto;
     padding: 2rem;
     padding-bottom: 100px;
+    box-sizing: border-box;
 }
 
 .header {
@@ -165,6 +172,8 @@ body {
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 2rem;
+    width: 100%;
+    max-width: 100%;
 }
 
 .greeting h1 {
@@ -423,6 +432,8 @@ body {
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
     text-align: center;
+    width: 100%;
+    max-width: 100%;
 }
 
 .calendar-weekday {

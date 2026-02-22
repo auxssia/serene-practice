@@ -180,7 +180,7 @@ async function renderCalendar() {
 
         html += `
             <div class="calendar-day ${densityClass} ${isSelected ? 'selected' : ''}" 
-                 onclick="selectCalendarDate('${dStr}')">
+                 onclick="selectCalendarDate(${year}, ${month}, ${day})">
                 ${day}
             </div>
         `;
@@ -190,8 +190,8 @@ async function renderCalendar() {
     elements.calendarContainer.innerHTML = html;
 }
 
-window.selectCalendarDate = (dateStr) => {
-    state.selectedDate = new Date(dateStr);
+window.selectCalendarDate = (year, month, day) => {
+    state.selectedDate = new Date(year, month, day);
     updateDateView();
     toggleCalendar(false);
 };
@@ -566,7 +566,8 @@ function attachEventListeners() {
     elements.calendarToggle.addEventListener('click', () => toggleCalendar());
     elements.datePicker.addEventListener('change', (e) => {
         if (e.target.value) {
-            state.selectedDate = new Date(e.target.value);
+            const [y, m, d] = e.target.value.split('-').map(Number);
+            state.selectedDate = new Date(y, m - 1, d);
             updateDateView();
         }
     });
