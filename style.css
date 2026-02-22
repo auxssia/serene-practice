@@ -280,6 +280,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .date-nav {
@@ -910,5 +911,10 @@ body {
         border-radius: 50px;
         box-shadow: var(--shadow-soft);
         margin: 0;
+        margin-bottom: 8px;
+    }
+
+    .date-controls .today-icon-btn:last-child {
+        margin-bottom: 0;
     }
 }
