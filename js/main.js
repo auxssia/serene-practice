@@ -119,9 +119,13 @@ async function updateDateView() {
 // --- CALENDAR LOGIC ---
 
 async function renderCalendar() {
-    const month = state.selectedDate.getMonth();
-    const year = state.selectedDate.getFullYear();
+    const month = state.calendarMonth;
+    const year = state.calendarYear;
     const userId = state.currentUser.id;
+
+    // Update Label
+    const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
+    elements.calMonthLabel.textContent = `${monthName} ${year}`;
 
     // Get range for data fetching
     const firstDay = new Date(year, month, 1);
@@ -200,6 +204,12 @@ function toggleCalendar(forceState) {
     const isExpanded = forceState !== undefined ? forceState : elements.calendarSection.classList.contains('calendar-collapsed');
 
     if (isExpanded) {
+        // Sync calendar view with current selected date when opening
+        if (forceState === undefined) {
+            state.calendarMonth = state.selectedDate.getMonth();
+            state.calendarYear = state.selectedDate.getFullYear();
+        }
+
         elements.calendarSection.classList.remove('calendar-collapsed');
         elements.calendarSection.classList.add('calendar-expanded');
         document.getElementById('toggle-icon').textContent = '🔼';
@@ -564,6 +574,24 @@ function attachEventListeners() {
     });
 
     elements.calendarToggle.addEventListener('click', () => toggleCalendar());
+
+    elements.calPrevMonth.addEventListener('click', () => {
+        state.calendarMonth--;
+        if (state.calendarMonth < 0) {
+            state.calendarMonth = 11;
+            state.calendarYear--;
+        }
+        renderCalendar();
+    });
+
+    elements.calNextMonth.addEventListener('click', () => {
+        state.calendarMonth++;
+        if (state.calendarMonth > 11) {
+            state.calendarMonth = 0;
+            state.calendarYear++;
+        }
+        renderCalendar();
+    });
     elements.datePicker.addEventListener('change', (e) => {
         if (e.target.value) {
             const [y, m, d] = e.target.value.split('-').map(Number);

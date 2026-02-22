@@ -276,6 +276,12 @@ body {
     margin-bottom: 1.5rem;
 }
 
+.date-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .date-nav {
     display: flex;
     align-items: center;
@@ -425,6 +431,22 @@ body {
     padding-top: 0;
     padding-bottom: 0;
     visibility: hidden;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+}
+
+#cal-month-label {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-charcoal);
+    min-width: 150px;
+    text-align: center;
 }
 
 .calendar-grid {
@@ -867,5 +889,26 @@ body {
 
     .header {
         align-items: center;
+    }
+
+    .date-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .date-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .date-controls .today-icon-btn {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        background: white;
+        padding: 12px;
+        border-radius: 50px;
+        box-shadow: var(--shadow-soft);
+        margin: 0;
     }
 }

@@ -6,7 +6,9 @@ export const state = {
     notes: [],
     pinnedNoteId: null,
     currentChecklist: [],
-    currentBlockedDate: null
+    currentBlockedDate: null,
+    calendarMonth: new Date().getMonth(),
+    calendarYear: new Date().getFullYear()
 };
 
 export const elements = {
@@ -35,6 +37,10 @@ export const elements = {
     sessionCount: document.getElementById('session-count'),
     calendarToggle: document.getElementById('calendar-toggle'),
     calendarSection: document.getElementById('calendar-section'),
+    calendarHeader: document.querySelector('.calendar-header'),
+    calMonthLabel: document.getElementById('cal-month-label'),
+    calPrevMonth: document.getElementById('cal-prev-month'),
+    calNextMonth: document.getElementById('cal-next-month'),
     calendarContainer: document.getElementById('calendar-container'),
 
     // Lists

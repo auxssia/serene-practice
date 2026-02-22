@@ -93,15 +93,17 @@
                 </div>
                 <button class="nav-btn" id="next-day">→</button>
             </div>
-            <!-- Block/Unblock Button -->
-            <button id="toggle-block-btn" class="today-icon-btn block-btn" title="Block/Unblock Date">
-                🔒
-            </button>
+            <div class="date-controls">
+                <!-- Block/Unblock Button -->
+                <button id="toggle-block-btn" class="today-icon-btn block-btn" title="Block/Unblock Date">
+                    🔒
+                </button>
 
-            <!-- Subtle "Return to Today" Icon (Hidden when on today) -->
-            <button id="jump-today" class="today-icon-btn hidden" title="Go to Today">
-                ↺
-            </button>
+                <!-- Subtle "Return to Today" Icon (Hidden when on today) -->
+                <button id="jump-today" class="today-icon-btn hidden" title="Go to Today">
+                    ↺
+                </button>
+            </div>
         </div>
 
         <div id="calendar-toggle" class="calendar-toggle-btn">
@@ -109,6 +111,11 @@
         </div>
 
         <section id="calendar-section" class="calendar-collapsed">
+            <div class="calendar-header">
+                <button id="cal-prev-month" class="nav-btn">←</button>
+                <div id="cal-month-label"></div>
+                <button id="cal-next-month" class="nav-btn">→</button>
+            </div>
             <div id="calendar-container"></div>
         </section>
 
