@@ -293,7 +293,8 @@ body {
     border-radius: 50px;
     box-shadow: var(--shadow-soft);
     cursor: pointer;
-    /* Makes the white space clickable */
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .nav-btn {
@@ -301,11 +302,11 @@ body {
     border: none;
     cursor: pointer;
     font-size: 1.2rem;
-    padding: 0 15px;
+    padding: 0 12px;
     color: var(--text-charcoal);
     opacity: 0.6;
     z-index: 10;
-    /* Ensure arrows sit above the background click */
+    flex-shrink: 0;
 }
 
 .nav-btn:hover {
@@ -313,8 +314,12 @@ body {
 }
 
 .date-wrapper {
-    flex-grow: 1;
+    flex: 1;
+    min-width: 0;
     text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .current-date {
@@ -324,6 +329,9 @@ body {
     cursor: pointer;
     white-space: nowrap;
     user-select: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
 }
 
 /* Hide the input but keep it accessible for JS */
