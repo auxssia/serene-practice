@@ -35,5 +35,14 @@ export const blockedDateService = {
             .select('*')
             .eq('user_id', userId)
             .order('date', { ascending: true });
+    },
+    async getBlockedDatesByRange(userId, start, end) {
+        if (!userId) return { data: [], error: 'User ID is required' };
+        return await supabaseClient
+            .from('blocked_dates')
+            .select('date')
+            .eq('user_id', userId)
+            .gte('date', start)
+            .lte('date', end);
     }
 };

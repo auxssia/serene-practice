@@ -83,7 +83,11 @@
             <div class="date-nav">
                 <button class="nav-btn" id="prev-day">←</button>
                 <div class="date-wrapper">
-                    <label for="date-picker" class="current-date" id="display-date">Today</label>
+                    <div class="date-header-row">
+                        <span id="today-badge" class="today-badge hidden">TODAY</span>
+                        <label for="date-picker" class="current-date" id="display-date">Today</label>
+                        <span id="session-count" class="count-chip">0 Sessions</span>
+                    </div>
                     <!-- Hidden input triggers standard calendar -->
                     <input type="date" id="date-picker">
                 </div>
@@ -99,6 +103,14 @@
                 ↺
             </button>
         </div>
+
+        <div id="calendar-toggle" class="calendar-toggle-btn">
+            <span id="toggle-icon">📅</span> Expand Monthly View
+        </div>
+
+        <section id="calendar-section" class="calendar-collapsed">
+            <div id="calendar-container"></div>
+        </section>
 
         <!-- Appointment List Card -->
         <div class="card-container">

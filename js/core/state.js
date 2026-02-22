@@ -31,6 +31,11 @@ export const elements = {
     datePicker: document.getElementById('date-picker'),
     jumpToday: document.getElementById('jump-today'),
     toggleBlockBtn: document.getElementById('toggle-block-btn'),
+    todayBadge: document.getElementById('today-badge'),
+    sessionCount: document.getElementById('session-count'),
+    calendarToggle: document.getElementById('calendar-toggle'),
+    calendarSection: document.getElementById('calendar-section'),
+    calendarContainer: document.getElementById('calendar-container'),
 
     // Lists
     appList: document.getElementById('appointment-list'),

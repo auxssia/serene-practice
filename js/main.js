@@ -45,6 +45,8 @@ function showApp() {
     elements.profileAvatar.textContent = name.substring(0, 2).toUpperCase();
     elements.menuName.textContent = name;
 
+    state.selectedDate = new Date(); // Force today on login
+
     async function loadInitialData() {
         await checkBlockedStatus();
         await renderDate();
@@ -87,8 +89,17 @@ async function renderDate() {
 
     const todayStr = new Date().toISOString().split('T')[0];
     const selStr = state.selectedDate.toISOString().split('T')[0];
-    if (todayStr !== selStr) elements.jumpToday.classList.remove('hidden');
-    else elements.jumpToday.classList.add('hidden');
+    const isToday = todayStr === selStr;
+
+    if (!isToday) {
+        elements.jumpToday.classList.remove('hidden');
+        document.querySelector('.date-container').classList.remove('today-highlight');
+        elements.todayBadge.classList.add('hidden');
+    } else {
+        elements.jumpToday.classList.add('hidden');
+        document.querySelector('.date-container').classList.add('today-highlight');
+        elements.todayBadge.classList.remove('hidden');
+    }
 }
 
 async function checkBlockedStatus() {
@@ -105,6 +116,101 @@ async function updateDateView() {
     fetchAppointments();
 }
 
+// --- CALENDAR LOGIC ---
+
+async function renderCalendar() {
+    const month = state.selectedDate.getMonth();
+    const year = state.selectedDate.getFullYear();
+    const userId = state.currentUser.id;
+
+    // Get range for data fetching
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startStr = firstDay.toISOString().split('T')[0];
+    const endStr = lastDay.toISOString().split('T')[0];
+
+    // Parallel fetch for density and blocks
+    const [appts, blocks] = await Promise.all([
+        appointmentService.fetchAppointmentsByDateRange(userId, startStr, endStr),
+        blockedDateService.getBlockedDatesByRange(userId, startStr, endStr)
+    ]);
+
+    const apptCounts = (appts.data || []).reduce((acc, a) => {
+        acc[a.date] = (acc[a.date] || 0) + 1;
+        return acc;
+    }, {});
+
+    const blockedSet = new Set((blocks.data || []).map(b => b.date));
+
+    // Calendar Calculations
+    const startingDay = firstDay.getDay(); // 0 = Sunday
+    const monthLength = lastDay.getDate();
+    const selectedStr = state.selectedDate.toISOString().split('T')[0];
+
+    let html = `
+        <div class="calendar-grid">
+            <div class="calendar-weekday">S</div>
+            <div class="calendar-weekday">M</div>
+            <div class="calendar-weekday">T</div>
+            <div class="calendar-weekday">W</div>
+            <div class="calendar-weekday">T</div>
+            <div class="calendar-weekday">F</div>
+            <div class="calendar-weekday">S</div>
+    `;
+
+    // Padding for first week
+    for (let i = 0; i < startingDay; i++) {
+        html += `<div class="calendar-day other-month"></div>`;
+    }
+
+    // Fill the days
+    for (let day = 1; day <= monthLength; day++) {
+        const d = new Date(year, month, day);
+        const dStr = d.toISOString().split('T')[0];
+        const count = apptCounts[dStr] || 0;
+        const isBlocked = blockedSet.has(dStr);
+        const isSelected = dStr === selectedStr;
+
+        let densityClass = '';
+        if (isBlocked) densityClass = 'density-blocked';
+        else if (count >= 10) densityClass = 'density-max';
+        else if (count >= 5) densityClass = 'density-high';
+        else if (count >= 3) densityClass = 'density-medium';
+        else if (count >= 1) densityClass = 'density-low';
+
+        html += `
+            <div class="calendar-day ${densityClass} ${isSelected ? 'selected' : ''}" 
+                 onclick="selectCalendarDate('${dStr}')">
+                ${day}
+            </div>
+        `;
+    }
+
+    html += `</div>`;
+    elements.calendarContainer.innerHTML = html;
+}
+
+window.selectCalendarDate = (dateStr) => {
+    state.selectedDate = new Date(dateStr);
+    updateDateView();
+    toggleCalendar(false);
+};
+
+function toggleCalendar(forceState) {
+    const isExpanded = forceState !== undefined ? forceState : elements.calendarSection.classList.contains('calendar-collapsed');
+
+    if (isExpanded) {
+        elements.calendarSection.classList.remove('calendar-collapsed');
+        elements.calendarSection.classList.add('calendar-expanded');
+        document.getElementById('toggle-icon').textContent = '🔼';
+        renderCalendar();
+    } else {
+        elements.calendarSection.classList.remove('calendar-expanded');
+        elements.calendarSection.classList.add('calendar-collapsed');
+        document.getElementById('toggle-icon').textContent = '📅';
+    }
+}
+
 // --- APPOINTMENTS ---
 
 async function fetchAppointments() {
@@ -115,6 +221,11 @@ async function fetchAppointments() {
 
     if (error) console.error("Appt Error:", error);
     state.appointments = data || [];
+
+    // Update session count
+    const count = state.appointments.length;
+    elements.sessionCount.textContent = `${count} Session${count !== 1 ? 's' : ''}`;
+
     renderAppointments();
 }
 
@@ -451,6 +562,8 @@ function attachEventListeners() {
         state.selectedDate = new Date();
         updateDateView();
     });
+
+    elements.calendarToggle.addEventListener('click', () => toggleCalendar());
     elements.datePicker.addEventListener('change', (e) => {
         if (e.target.value) {
             state.selectedDate = new Date(e.target.value);

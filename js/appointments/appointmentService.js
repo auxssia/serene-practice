@@ -31,5 +31,11 @@ export const appointmentService = {
     },
     async bulkSaveAppointments(appointments) {
         return await supabaseClient.from('appointments').insert(appointments);
+    },
+    async fetchAppointmentsByDateRange(userId, start, end) {
+        return await supabaseClient.from('appointments').select('date')
+            .eq('user_id', userId)
+            .gte('date', start)
+            .lte('date', end);
     }
 };
