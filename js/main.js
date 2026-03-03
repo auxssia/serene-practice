@@ -15,6 +15,22 @@ function formatDateISO(date) {
     return `${y}-${m}-${d}`;
 }
 
+function withTimeout(promise, timeoutMs = 8000) {
+    let timeoutId;
+    const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+            reject(new Error("Network timeout. Please check your connection."));
+        }, timeoutMs);
+    });
+
+    return Promise.race([
+        promise,
+        timeoutPromise
+    ]).finally(() => {
+        clearTimeout(timeoutId);
+    });
+}
+
 // --- INITIALIZATION ---
 
 async function init() {
@@ -23,12 +39,19 @@ async function init() {
         return;
     }
 
-    const { data: { session } } = await authService.getSession();
-    if (session) {
-        state.currentUser = session.user;
-        showApp();
-    } else {
+    try {
+        const { data: { session } } = await withTimeout(authService.getSession());
+        if (session) {
+            state.currentUser = session.user;
+            showApp();
+        } else {
+            showAuth();
+        }
+    } catch (err) {
+        console.error("Session check failed:", err);
         showAuth();
+        // If it's a timeout, we might want to alert or show it on the auth screen
+        if (elements.authError) elements.authError.textContent = err.message;
     }
 
     attachEventListeners();
@@ -471,15 +494,15 @@ function attachEventListeners() {
             let error;
 
             if (state.isSignUpMode) {
-                const signUpResponse = await authService.signUp(email, password, fullName);
+                const signUpResponse = await withTimeout(authService.signUp(email, password, fullName));
                 error = signUpResponse.error;
                 if (!error) {
                     alert("Account created! Logging you in...");
-                    const signInResponse = await authService.signIn(email, password);
+                    const signInResponse = await withTimeout(authService.signIn(email, password));
                     if (!signInResponse.error) window.location.reload();
                 }
             } else {
-                const signInResponse = await authService.signIn(email, password);
+                const signInResponse = await withTimeout(authService.signIn(email, password));
                 error = signInResponse.error;
                 if (signInResponse.data.user) {
                     state.currentUser = signInResponse.data.user;

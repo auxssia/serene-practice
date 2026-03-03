@@ -49,6 +49,26 @@ async function sendReminders() {
     console.log(`--- Reminder Sync: ${new Date().toISOString()} ---`);
     console.log(`Checking appointments for: ${tomorrowStr}`);
 
+    // --- KEEP-ALIVE PING ---
+    // Ensure at least one daily interaction to prevent Supabase free-tier pause.
+    try {
+        const pingUrl = `${supabaseUrl}/rest/v1/appointments?select=id&limit=1`;
+        const pingResponse = await fetch(pingUrl, {
+            method: 'GET',
+            headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`
+            }
+        });
+        if (pingResponse.ok) {
+            console.log('[KEEP-ALIVE] Supabase ping successful.');
+        } else {
+            console.warn('[KEEP-ALIVE] Supabase ping returned non-OK status:', pingResponse.status);
+        }
+    } catch (pingErr) {
+        console.error('[KEEP-ALIVE] Supabase is unreachable:', pingErr.message);
+    }
+
     try {
         const queryUrl = `${supabaseUrl}/rest/v1/appointments?date=eq.${tomorrowStr}&send_reminder=eq.true&reminder_sent=eq.false`;
 
