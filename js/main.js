@@ -7,6 +7,14 @@ import { clientService } from './clients/clientService.js';
 import { blockedDateService } from './blockedDates/blockedDateService.js';
 import { generateWeeklyOccurrences } from './appointments/recurrenceService.js';
 
+// --- UTILS ---
+function formatDateISO(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
 // --- INITIALIZATION ---
 
 async function init() {
@@ -74,7 +82,7 @@ async function renderDate() {
     const weekday = state.selectedDate.toLocaleString('default', { weekday: 'long' });
 
     elements.displayDate.textContent = `${day}, ${month}, ${year} (${weekday})`;
-    elements.datePicker.value = state.selectedDate.toISOString().split('T')[0];
+    elements.datePicker.value = formatDateISO(state.selectedDate);
 
     // Visual indicator for blocked date
     if (state.currentBlockedDate) {
@@ -87,8 +95,8 @@ async function renderDate() {
         elements.toggleBlockBtn.title = 'Block this date';
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
-    const selStr = state.selectedDate.toISOString().split('T')[0];
+    const todayStr = formatDateISO(new Date());
+    const selStr = formatDateISO(state.selectedDate);
     const isToday = todayStr === selStr;
 
     if (!isToday) {
@@ -103,7 +111,7 @@ async function renderDate() {
 }
 
 async function checkBlockedStatus() {
-    const dateStr = state.selectedDate.toISOString().split('T')[0];
+    const dateStr = formatDateISO(state.selectedDate);
     const { data, error } = await blockedDateService.getBlockedDate(state.currentUser.id, dateStr);
 
     if (error) console.error("Error checking blocked status:", error);
@@ -130,8 +138,8 @@ async function renderCalendar() {
     // Get range for data fetching
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const startStr = firstDay.toISOString().split('T')[0];
-    const endStr = lastDay.toISOString().split('T')[0];
+    const startStr = formatDateISO(firstDay);
+    const endStr = formatDateISO(lastDay);
 
     // Parallel fetch for density and blocks
     const [appts, blocks] = await Promise.all([
@@ -149,7 +157,7 @@ async function renderCalendar() {
     // Calendar Calculations
     const startingDay = firstDay.getDay(); // 0 = Sunday
     const monthLength = lastDay.getDate();
-    const selectedStr = state.selectedDate.toISOString().split('T')[0];
+    const selectedStr = formatDateISO(state.selectedDate);
 
     let html = `
         <div class="calendar-grid">
@@ -170,7 +178,7 @@ async function renderCalendar() {
     // Fill the days
     for (let day = 1; day <= monthLength; day++) {
         const d = new Date(year, month, day);
-        const dStr = d.toISOString().split('T')[0];
+        const dStr = formatDateISO(d);
         const count = apptCounts[dStr] || 0;
         const isBlocked = blockedSet.has(dStr);
         const isSelected = dStr === selectedStr;
@@ -225,7 +233,7 @@ function toggleCalendar(forceState) {
 
 async function fetchAppointments() {
     elements.appList.innerHTML = '<div class="empty-state">Loading...</div>';
-    const dateStr = state.selectedDate.toISOString().split('T')[0];
+    const dateStr = formatDateISO(state.selectedDate);
 
     const { data, error } = await appointmentService.fetchAppointments(state.currentUser.id, dateStr);
 
@@ -602,7 +610,7 @@ function attachEventListeners() {
 
     elements.toggleBlockBtn.addEventListener('click', async () => {
         const userId = state.currentUser.id;
-        const dateStr = state.selectedDate.toISOString().split('T')[0];
+        const dateStr = formatDateISO(state.selectedDate);
 
         if (state.currentBlockedDate) {
             // Unblock
@@ -624,7 +632,7 @@ function attachEventListeners() {
     document.getElementById('fab-add').addEventListener('click', () => {
         elements.sessionForm.reset();
         document.getElementById('edit-id').value = '';
-        document.getElementById('session-date').value = state.selectedDate.toISOString().split('T')[0];
+        document.getElementById('session-date').value = formatDateISO(state.selectedDate);
         document.getElementById('modal-title').textContent = "New Session";
 
         // Show/reset recurrence for new appts

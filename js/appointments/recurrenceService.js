@@ -8,13 +8,18 @@
 export function generateWeeklyOccurrences(baseDate, weeksCount = 8) {
     if (!baseDate) return [];
 
+    const [y, m, d] = baseDate.split('-').map(Number);
     const occurrences = [];
-    const start = new Date(baseDate);
 
     for (let i = 1; i <= weeksCount; i++) {
-        const next = new Date(start);
-        next.setDate(start.getDate() + (i * 7));
-        occurrences.push(next.toISOString().split('T')[0]);
+        // Construct date in local time
+        const next = new Date(y, m - 1, d + (i * 7));
+
+        // Format back to YYYY-MM-DD local
+        const ny = next.getFullYear();
+        const nm = String(next.getMonth() + 1).padStart(2, '0');
+        const nd = String(next.getDate()).padStart(2, '0');
+        occurrences.push(`${ny}-${nm}-${nd}`);
     }
 
     return occurrences;

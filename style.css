@@ -422,11 +422,12 @@ body {
     margin-bottom: 1.5rem;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: top;
+    height: auto;
     overflow: hidden;
 }
 
 .calendar-expanded {
-    max-height: 500px;
+    max-height: 1000px;
     opacity: 1;
     transform: scaleY(1);
     padding: 1.2rem;
@@ -440,6 +441,7 @@ body {
     padding-top: 0;
     padding-bottom: 0;
     visibility: hidden;
+    overflow: hidden;
 }
 
 .calendar-header {
