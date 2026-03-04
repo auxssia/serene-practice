@@ -171,11 +171,17 @@ async function renderCalendar() {
     ]);
 
     const apptCounts = (appts.data || []).reduce((acc, a) => {
-        acc[a.date] = (acc[a.date] || 0) + 1;
+        const [y, m, d] = a.date.split("-").map(Number);
+        const localDate = new Date(y, m - 1, d);
+        const dayNum = localDate.getDate();
+        acc[dayNum] = (acc[dayNum] || 0) + 1;
         return acc;
     }, {});
 
-    const blockedSet = new Set((blocks.data || []).map(b => b.date));
+    const blockedDays = new Set((blocks.data || []).map(b => {
+        const [y, m, d] = b.date.split("-").map(Number);
+        return new Date(y, m - 1, d).getDate();
+    }));
 
     // Calendar Calculations
     const startingDay = firstDay.getDay(); // 0 = Sunday
@@ -202,8 +208,8 @@ async function renderCalendar() {
     for (let day = 1; day <= monthLength; day++) {
         const d = new Date(year, month, day);
         const dStr = formatDateISO(d);
-        const count = apptCounts[dStr] || 0;
-        const isBlocked = blockedSet.has(dStr);
+        const count = apptCounts[day] || 0;
+        const isBlocked = blockedDays.has(day);
         const isSelected = dStr === selectedStr;
 
         let densityClass = '';
