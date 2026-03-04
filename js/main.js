@@ -789,8 +789,10 @@ function attachEventListeners() {
         elements.saveBtn.textContent = "Save";
 
         // If the date changed, jump to that date
-        if (new Date(formData.date).getDate() !== state.selectedDate.getDate()) {
-            state.selectedDate = new Date(formData.date);
+        const [y, m, d] = formData.date.split('-').map(Number);
+        const localDate = new Date(y, m - 1, d);
+        if (localDate.getDate() !== state.selectedDate.getDate()) {
+            state.selectedDate = localDate;
             renderDate();
         }
         fetchAppointments();
