@@ -1,4 +1,4 @@
-const CACHE_NAME = "serene-practice-v0.2-mobile";
+const CACHE_NAME = "serene-practice-v0.3-mobile";
 const BASE_PATH = "/serene-practice/";
 
 const STATIC_ASSETS = [
