@@ -44,9 +44,16 @@ async function sendReminders() {
     // Calculate "Tomorrow" date string (YYYY-MM-DD)
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
-    console.log(`--- Reminder Sync: ${new Date().toISOString()} ---`);
+    const formatLocal = (d) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    const tomorrowStr = formatLocal(tomorrow);
+
+    console.log(`--- Reminder Sync: ${new Date().toLocaleString()} ---`);
     console.log(`Checking appointments for: ${tomorrowStr}`);
 
     // --- KEEP-ALIVE PING ---
